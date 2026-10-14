@@ -1,0 +1,74 @@
+const by=(items,key)=>items.reduce((map,item)=>(map[item[key]]??=[],map[item[key]].push(item),map),{});
+
+function trendChart(inspections,escape,pct){
+  const dates=Object.entries(by(inspections,'date')).sort(([a],[b])=>a.localeCompare(b));
+  if(!dates.length)return '<div class="empty">No inspection records match these filters.</div>';
+  const values=dates.map(([date,rows])=>({date,rate:rows.reduce((n,r)=>n+r.defects,0)/rows.reduce((n,r)=>n+r.sample,0)*100}));
+  const high=Math.max(6,...values.map(v=>v.rate));
+  const points=values.map((v,i)=>({x:36+i*510/Math.max(values.length-1,1),y:145-v.rate/high*112}));
+  const line=points.map(p=>p.x+','+p.y).join(' ');
+  const target=145-2.5/high*112;
+  let svg='<svg class="chart" viewBox="0 0 580 190" role="img" aria-label="Inspection defect trend by date">';
+  svg+='<line class="gridline" x1="35" y1="145" x2="550" y2="145"/><line class="gridline" x1="35" y1="89" x2="550" y2="89"/><line class="threshold" x1="35" y1="'+target+'" x2="550" y2="'+target+'"/>';
+  svg+='<text x="456" y="'+Math.max(12,target-7)+'">2.5% threshold</text><polyline class="line" points="'+line+'"/>';
+  svg+=points.map((p,i)=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4"/><text x="'+(p.x-13)+'" y="169">'+escape(values[i].date.slice(5))+'</text>').join('');
+  svg+='</svg>';
+  return svg+'<div class="chart-summary">'+values.map(v=>'<span><b>'+escape(v.date.slice(5))+'</b> '+pct(v.rate)+'</span>').join('')+'</div>';
+}
+
+export function dashboardMarkup({db,exposure,filters,manifest,selectedFile,esc,num,pct,money,badge,head,kpi,card,calcScenario}){
+  const current=db.scenario||{title:'Baseline seam failure',description:'Original MG-7 seam defect and late complaint',focus:'Trace confirmed and precautionary scope'};
+  const factories=[...new Set(db.batches.map(b=>b.factory))];
+  const defects=[...new Set(db.inspections.map(i=>i.type))].sort();
+  const scoped=exposure.filter(b=>(filters.factory==='All'||b.factory===filters.factory)&&(filters.scope==='All'||b.scope===filters.scope));
+  const scopedIds=new Set(scoped.map(b=>b.id));
+  const inspections=db.inspections.filter(i=>scopedIds.has(i.batch)&&(filters.defect==='All'||i.type===filters.defect));
+  const inspected=inspections.reduce((s,i)=>s+i.sample,0),defective=inspections.reduce((s,i)=>s+i.defects,0);
+  const confirmed=scoped.filter(b=>b.scope==='Confirmed'),precaution=scoped.filter(b=>b.scope==='Precautionary');
+  const held=confirmed.reduce((s,b)=>s+b.inventory,0),shipped=confirmed.reduce((s,b)=>s+b.shipped,0);
+  const open=db.actions.filter(a=>a.status!=='Done').length;
+  const groups=Object.entries(by(inspections,'type')).map(([name,rows])=>({name,count:rows.reduce((s,r)=>s+r.defects,0),sample:rows.reduce((s,r)=>s+r.sample,0)})).sort((a,b)=>b.count-a.count);
+  const max=Math.max(1,...groups.map(g=>g.count));
+  const selected=manifest.find(s=>s.file===selectedFile)||manifest[0];
+  const recovery=calcScenario(db.incident.selectedScenario||'Inspect + targeted rework',db.recoveryInputs||{inspectors:4,stations:2,inspectRate:40,reworkLines:1,reworkRate:240});
+  const cost=db.costInputs||{prevention:1900,appraisal:3200,internal:5480,external:4240};
+  const qualityCost=Number(cost.prevention)+Number(cost.appraisal)+Number(cost.internal)+Number(cost.external);
+  const alert=groups[0];
+  let actions='<button class="btn primary" data-action="choose-file">↑ Upload file</button><input id="scenario-upload" type="file" accept=".json,.csv,application/json,text/csv" hidden>';
+  actions+='<button class="btn" data-action="download-report">↓ Download report</button><button class="btn" data-action="download-csv">↓ Export CSV</button>';
+  let html=head('Operations intelligence','Quality command center','Trace defects to exposure, recovery, cost and corrective action. All metrics below respond to the active filters.',actions);
+  html+='<section class="card pad scenario-card"><div><div class="eyebrow">Active test case</div><h2>'+esc(current.title)+'</h2><p>'+esc(current.description)+'</p><small>Verification focus: '+esc(current.focus)+'</small></div>';
+  html+='<div class="scenario-picker"><div class="field"><label>Load one of 20 scenarios</label><select id="scenario-select">'+manifest.map(s=>'<option value="'+esc(s.file)+'" '+(selectedFile===s.file?'selected':'')+'>'+esc(s.id.slice(0,2)+' · '+s.title)+'</option>').join('')+'</select></div><button class="btn lime" data-action="load-scenario" '+(!manifest.length?'disabled':'')+'>Load case</button><a class="btn" href="./test-files/scenarios.zip" download>↓ All 20 files</a></div></section>';
+  html+='<div class="filter-bar"><div><span class="eyebrow">Dashboard filters</span><p>Use the controls to focus the metrics and charts.</p></div><div class="filter-controls"><div class="field"><label>Factory</label><select id="dashboard-factory"><option>All</option>'+factories.map(f=>'<option value="'+esc(f)+'" '+(filters.factory===f?'selected':'')+'>'+esc(f)+'</option>').join('')+'</select></div><div class="field"><label>Defect</label><select id="dashboard-defect"><option>All</option>'+defects.map(d=>'<option value="'+esc(d)+'" '+(filters.defect===d?'selected':'')+'>'+esc(d)+'</option>').join('')+'</select></div><button class="btn" data-action="clear-filters">Clear filters</button></div></div>';
+  html+='<div class="scope-tabs">'+['All','Confirmed','Precautionary','Unrelated'].map(s=>'<button data-dashboard-scope="'+s+'" class="'+(filters.scope===s?'active':'')+'">'+s+' <b>'+exposure.filter(b=>s==='All'||b.scope===s).length+'</b></button>').join('')+'</div>';
+  html+='<div class="grid cols-4">'+kpi('Confirmed stock',num(held)+' units',confirmed.length+' batches in selected view','red')+kpi('Already shipped',num(shipped)+' units','Customer exposure','amber')+kpi('Defects / hundred units',inspected?pct(defective/inspected*100):'—',num(defective)+' defects / '+num(inspected)+' inspected','teal')+kpi('Open CAPA actions',open,db.incident.stage+' · '+db.incident.id,'blue')+'</div>';
+  let risk='<div class="risk-strip"><div><b>'+confirmed.length+'</b><span>Confirmed</span></div><div><b>'+precaution.length+'</b><span>Precautionary</span></div><div><b>'+scoped.filter(b=>b.scope==='Unrelated').length+'</b><span>Unrelated</span></div></div>';
+  risk+='<div class="callout"><strong>Signal:</strong> '+(alert?esc(alert.name)+' contributes '+alert.count+' defects across '+num(alert.sample)+' inspected units. ':'No matching defect records. ')+'Review records and verify causes before extending containment.</div>';
+  html+='<div class="grid wide-left" style="margin-top:17px"><div class="grid">';
+  html+=card('Volume-adjusted defect trend','Daily sampled rate for the current factory and defect filters',trendChart(inspections,esc,pct));
+  html+=card('Production exposure','Select any row to inspect its genealogy','<div class="table-wrap"><table><thead><tr><th>Batch / product</th><th>Factory / line</th><th>Basis</th><th>Stock</th><th>Shipped</th><th>Scope</th></tr></thead><tbody>'+scoped.map(b=>'<tr class="clickable" data-batch="'+esc(b.id)+'" data-goto="trace"><td><strong>'+esc(b.id)+'</strong><br><span class="muted">'+esc(b.sku)+'</span></td><td>'+esc(b.factory)+' · '+esc(b.line)+'</td><td>'+esc(b.reason)+'</td><td>'+num(b.inventory)+'</td><td>'+num(b.shipped)+'</td><td>'+badge(b.scope,b.scope==='Confirmed'?'red':b.scope==='Precautionary'?'amber':'gray')+'</td></tr>').join('')+'</tbody></table></div>'+(scoped.length?'':'<div class="empty">No batches match the selected filters.</div>'));
+  html+='</div><div class="grid">';
+  let pareto='<div class="bar-list">'+groups.slice(0,6).map(g=>'<button class="pareto-row" data-dashboard-defect="'+esc(g.name)+'"><span>'+esc(g.name)+'</span><div class="progress"><span style="width:'+g.count/max*100+'%"></span></div><b>'+g.count+'</b></button>').join('')+'</div>';
+  pareto+=groups.length?'<p class="note">Click a defect to filter the full dashboard.</p>':'<div class="empty">No defects match the filters.</div>';
+  html+=card('Defect Pareto','Click a category to drill down',pareto);
+  const failing=inspections.filter(i=>i.disposition==='Fail');
+  const alertName=alert?.name||'No active defect pattern';
+  const alertRate=alert?alert.count/alert.sample*100:0;
+  const supporting=failing.filter(i=>i.type===alertName).map(i=>i.id).slice(0,4);
+  const warning='<div class="mini-list"><div class="mini-item"><div class="mini-icon">↗</div><div><strong>What changed</strong><p>'+esc(alertName)+' is at '+pct(alertRate)+' across the selected sample; trigger is 2.5%.</p></div></div><div class="mini-item"><div class="mini-icon">⌖</div><div><strong>Where and evidence</strong><p>'+esc([...new Set(failing.map(i=>i.batch))].join(', ')||'No failing batches')+' · '+esc(supporting.join(', ')||'No failed record IDs')+'</p></div></div><div class="mini-item"><div class="mini-icon">?</div><div><strong>Confidence and next check</strong><p>'+(supporting.length>1?'Moderate pattern evidence':'Limited evidence')+'. Verify physical samples, setup logs and comparable batches before confirming cause.</p></div></div></div>';
+  html+=card('Early warning','Inspection-volume-adjusted, with visible uncertainty',warning);
+  html+=card('Exposure confidence','Confirmed and precautionary records stay separate',risk);
+  html+=card('Recovery & commercial decision','Plan values update when capacity or cost assumptions change','<div class="decision-grid"><div><small>Selected plan</small><strong>'+esc(recovery.name)+'</strong></div><div><small>Completion</small><strong>'+esc(recovery.date)+'</strong></div><div><small>Recovery cost</small><strong>'+money(recovery.cost)+'</strong></div><div><small>Total quality cost</small><strong>'+money(qualityCost)+'</strong></div></div><div class="row" style="margin-top:15px"><button class="btn" data-view="recovery">Adjust capacity →</button><button class="btn" data-view="cost">Review COPQ →</button></div>');
+  html+=card('CAPA readiness','Evidence gates still control closure','<div class="progress"><span style="width:'+db.actions.filter(a=>a.status==='Done').length/Math.max(1,db.actions.length)*100+'%"></span></div><p class="small">'+db.actions.filter(a=>a.status==='Done').length+' of '+db.actions.length+' actions complete · '+open+' outstanding</p><button class="btn" data-view="capa">Open CAPA →</button>');
+  html+='</div></div>';
+  const allUnits=scoped.reduce((n,b)=>n+b.units,0),weightedFpy=allUnits?scoped.reduce((n,b)=>n+b.firstPass*b.units,0)/allUnits:0;
+  const reworkUnits=(db.rework||[]).filter(r=>scopedIds.has(r.batch)).reduce((n,r)=>n+r.units,0);
+  const complaintCount=db.complaints.filter(c=>scopedIds.has(c.batch)).length;
+  const accepted=Math.max(1,allUnits-defective),completed=db.actions.filter(a=>a.status==='Done').length;
+  const overdue=db.actions.filter(a=>a.status!=='Done'&&a.due<new Date().toISOString().slice(0,10)).length;
+  const evidenceComplete=db.actions.filter(a=>a.status==='Done'&&a.evidence).length;
+  const qcd=[['Quality','First-pass yield',allUnits?pct(weightedFpy):'—','Volume-weighted batches'],['Quality','Rework rate',allUnits?pct(reworkUnits/allUnits*100):'—','Recorded rework units / production'],['Quality','Complaint rate',shipped?(complaintCount/shipped*1000).toFixed(1)+' / 1k':'—','Linked complaints / shipped units'],['Cost','COPQ / acceptable unit',allUnits?'$'+(qualityCost/accepted).toFixed(2):'—','Scenario cost / estimated acceptable units'],['Cost','External failure cost',money(cost.external),'Returns, claims and replacement exposure'],['Delivery','Recovery lead time',recovery.totalDays+' days','Capacity-adjusted estimate'],['Delivery','Shipment delay',recovery.delay?recovery.delay+' days':'On time','Against 18 Oct cut-off'],['Execution','CAPA completion',pct(completed/Math.max(1,db.actions.length)*100),'Actions done / total'],['Execution','Overdue actions',String(overdue),'Open actions past due'],['Execution','Evidence-complete actions',completed?`${evidenceComplete}/${completed}`:'0/0','Completed actions with reference']];
+  html+=card('QCD & execution scorecard','Quality, cost, delivery and leadership measures in one view','<div class="table-wrap"><table><thead><tr><th>Dimension</th><th>KPI</th><th>Current</th><th>Basis</th></tr></thead><tbody>'+qcd.map(row=>'<tr><td><strong>'+esc(row[0])+'</strong></td><td>'+esc(row[1])+'</td><td><strong>'+esc(row[2])+'</strong></td><td class="muted">'+esc(row[3])+'</td></tr>').join('')+'</tbody></table></div>');
+  html+='<p class="note dashboard-footer">Upload a scenario JSON file to replace the current synthetic case, or a CSV inspection file to append inspection records. <a href="./test-files/inspection-template.csv" download>Download the CSV template</a>. Reports reflect the current data and filters. Data remains in this browser.</p>';
+  return html;
+}

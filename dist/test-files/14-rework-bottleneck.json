@@ -1,0 +1,784 @@
+{
+  "format": "garment-quality-scenario-v1",
+  "scenario": {
+    "id": "14-rework-bottleneck",
+    "title": "Rework bottleneck",
+    "description": "Approved line can repair only 55 units per day",
+    "focus": "Expose rework-driven shipment delay"
+  },
+  "data": {
+    "factories": [
+      {
+        "id": "F-01",
+        "name": "Dhaka Apparel Works",
+        "country": "Bangladesh"
+      },
+      {
+        "id": "F-02",
+        "name": "Gazipur Stitch House",
+        "country": "Bangladesh"
+      }
+    ],
+    "products": [
+      {
+        "sku": "ST-204",
+        "name": "Essential Poplin Shirt",
+        "style": "Men’s woven shirt",
+        "complexity": 1.1
+      },
+      {
+        "sku": "TS-118",
+        "name": "Everyday Jersey Tee",
+        "style": "Unisex knit tee",
+        "complexity": 0.8
+      },
+      {
+        "sku": "TR-330",
+        "name": "Tailored Chino",
+        "style": "Men’s twill trouser",
+        "complexity": 1.3
+      }
+    ],
+    "orders": [
+      {
+        "id": "PO-7812",
+        "customer": "Northline Retail",
+        "sku": "ST-204",
+        "units": 9200,
+        "due": "2026-10-20",
+        "market": "United Kingdom"
+      },
+      {
+        "id": "PO-7815",
+        "customer": "Field & Form",
+        "sku": "TS-118",
+        "units": 6100,
+        "due": "2026-10-25",
+        "market": "Germany"
+      },
+      {
+        "id": "PO-7820",
+        "customer": "Northline Retail",
+        "sku": "TR-330",
+        "units": 4200,
+        "due": "2026-10-29",
+        "market": "United Kingdom"
+      }
+    ],
+    "materials": [
+      {
+        "id": "FAB-462",
+        "type": "Fabric",
+        "detail": "Poplin, dye lot DYE-91",
+        "supplier": "Meridian Textiles"
+      },
+      {
+        "id": "FAB-470",
+        "type": "Fabric",
+        "detail": "Poplin, dye lot DYE-94",
+        "supplier": "Meridian Textiles"
+      },
+      {
+        "id": "FAB-512",
+        "type": "Fabric",
+        "detail": "Jersey, dye lot DYE-107",
+        "supplier": "Knitwell"
+      },
+      {
+        "id": "FAB-600",
+        "type": "Fabric",
+        "detail": "Twill, dye lot DYE-111",
+        "supplier": "Meridian Textiles"
+      },
+      {
+        "id": "THR-088",
+        "type": "Thread",
+        "detail": "Polyester 40/2, lot T-88",
+        "supplier": "Atlas Thread"
+      },
+      {
+        "id": "THR-092",
+        "type": "Thread",
+        "detail": "Polyester 40/2, lot T-92",
+        "supplier": "Atlas Thread"
+      },
+      {
+        "id": "TRM-033",
+        "type": "Trim",
+        "detail": "Shirt buttons and labels",
+        "supplier": "Metro Trims"
+      }
+    ],
+    "batches": [
+      {
+        "id": "B-1042",
+        "order": "PO-7812",
+        "sku": "ST-204",
+        "factory": "F-01",
+        "line": "L-04",
+        "machine": "MG-7",
+        "team": "Team C",
+        "shift": "Day",
+        "cutting": "CUT-210",
+        "sewing": "SEW-397",
+        "finishing": "FIN-315",
+        "packing": "PK-401",
+        "fabric": "FAB-462",
+        "thread": "THR-088",
+        "trim": "TRM-033",
+        "start": "2026-10-07",
+        "end": "2026-10-10",
+        "units": 2400,
+        "inventory": 1800,
+        "shipped": 600,
+        "location": "Warehouse A / Zone Q",
+        "status": "Hold",
+        "defectRate": 5.8,
+        "firstPass": 92.4
+      },
+      {
+        "id": "B-1043",
+        "order": "PO-7812",
+        "sku": "ST-204",
+        "factory": "F-01",
+        "line": "L-03",
+        "machine": "MG-3",
+        "team": "Team A",
+        "shift": "Day",
+        "cutting": "CUT-211",
+        "sewing": "SEW-398",
+        "finishing": "FIN-316",
+        "packing": "PK-402",
+        "fabric": "FAB-462",
+        "thread": "THR-088",
+        "trim": "TRM-033",
+        "start": "2026-10-08",
+        "end": "2026-10-11",
+        "units": 2200,
+        "inventory": 2200,
+        "shipped": 0,
+        "location": "Warehouse A / Zone B",
+        "status": "Available",
+        "defectRate": 0.9,
+        "firstPass": 98.7
+      },
+      {
+        "id": "B-1044",
+        "order": "PO-7812",
+        "sku": "ST-204",
+        "factory": "F-01",
+        "line": "L-04",
+        "machine": "MG-7",
+        "team": "Team C",
+        "shift": "Night",
+        "cutting": "CUT-212",
+        "sewing": "SEW-399",
+        "finishing": "FIN-317",
+        "packing": "PK-403",
+        "fabric": "FAB-470",
+        "thread": "THR-092",
+        "trim": "TRM-033",
+        "start": "2026-10-10",
+        "end": "2026-10-12",
+        "units": 2100,
+        "inventory": 2100,
+        "shipped": 0,
+        "location": "Warehouse A / Zone C",
+        "status": "Monitor",
+        "defectRate": 3.9,
+        "firstPass": 94.2
+      },
+      {
+        "id": "B-1038",
+        "order": "PO-7812",
+        "sku": "ST-204",
+        "factory": "F-01",
+        "line": "L-04",
+        "machine": "MG-7",
+        "team": "Team C",
+        "shift": "Day",
+        "cutting": "CUT-206",
+        "sewing": "SEW-393",
+        "finishing": "FIN-311",
+        "packing": "PK-397",
+        "fabric": "FAB-470",
+        "thread": "THR-092",
+        "trim": "TRM-033",
+        "start": "2026-10-03",
+        "end": "2026-10-06",
+        "units": 2500,
+        "inventory": 0,
+        "shipped": 2500,
+        "location": "In transit / UK",
+        "status": "Shipped",
+        "defectRate": 2.9,
+        "firstPass": 95
+      },
+      {
+        "id": "B-1045",
+        "order": "PO-7815",
+        "sku": "TS-118",
+        "factory": "F-02",
+        "line": "L-08",
+        "machine": "MG-12",
+        "team": "Team F",
+        "shift": "Day",
+        "cutting": "CUT-213",
+        "sewing": "SEW-400",
+        "finishing": "FIN-318",
+        "packing": "PK-404",
+        "fabric": "FAB-512",
+        "thread": "THR-088",
+        "trim": "TRM-033",
+        "start": "2026-10-09",
+        "end": "2026-10-12",
+        "units": 3000,
+        "inventory": 3000,
+        "shipped": 0,
+        "location": "Warehouse B / Zone A",
+        "status": "Available",
+        "defectRate": 0.8,
+        "firstPass": 98.9
+      },
+      {
+        "id": "B-1046",
+        "order": "PO-7820",
+        "sku": "TR-330",
+        "factory": "F-02",
+        "line": "L-09",
+        "machine": "MG-15",
+        "team": "Team G",
+        "shift": "Night",
+        "cutting": "CUT-214",
+        "sewing": "SEW-401",
+        "finishing": "FIN-319",
+        "packing": "PK-405",
+        "fabric": "FAB-600",
+        "thread": "THR-092",
+        "trim": "TRM-033",
+        "start": "2026-10-11",
+        "end": "2026-10-13",
+        "units": 2100,
+        "inventory": 2100,
+        "shipped": 0,
+        "location": "Warehouse B / Zone D",
+        "status": "Available",
+        "defectRate": 1.2,
+        "firstPass": 98.2
+      }
+    ],
+    "processConditions": [
+      {
+        "batch": "B-1042",
+        "operation": "Side seam sewing",
+        "machine": "MG-7",
+        "needle": "Nm 80",
+        "tension": "Drift suspected",
+        "speed": 3400,
+        "humidity": 66,
+        "setupSignoff": false
+      },
+      {
+        "batch": "B-1043",
+        "operation": "Side seam sewing",
+        "machine": "MG-3",
+        "needle": "Nm 80",
+        "tension": "Within standard",
+        "speed": 3150,
+        "humidity": 65,
+        "setupSignoff": true
+      },
+      {
+        "batch": "B-1044",
+        "operation": "Side seam sewing",
+        "machine": "MG-7",
+        "needle": "Nm 80",
+        "tension": "Drift suspected",
+        "speed": 3420,
+        "humidity": 64,
+        "setupSignoff": false
+      },
+      {
+        "batch": "B-1038",
+        "operation": "Side seam sewing",
+        "machine": "MG-7",
+        "needle": "Nm 80",
+        "tension": "Log incomplete",
+        "speed": 3380,
+        "humidity": 67,
+        "setupSignoff": false
+      }
+    ],
+    "fabricRolls": [
+      {
+        "id": "ROLL-462-01",
+        "lot": "FAB-462",
+        "batch": "B-1042",
+        "meters": 3200
+      },
+      {
+        "id": "ROLL-462-02",
+        "lot": "FAB-462",
+        "batch": "B-1043",
+        "meters": 3000
+      },
+      {
+        "id": "ROLL-470-01",
+        "lot": "FAB-470",
+        "batch": "B-1044",
+        "meters": 2900
+      },
+      {
+        "id": "ROLL-470-02",
+        "lot": "FAB-470",
+        "batch": "B-1038",
+        "meters": 3400
+      }
+    ],
+    "rework": [
+      {
+        "id": "RW-011",
+        "batch": "B-1042",
+        "operation": "Side seam repair",
+        "units": 72,
+        "hours": 24,
+        "cost": 840,
+        "status": "Reserved"
+      },
+      {
+        "id": "RW-012",
+        "batch": "B-1044",
+        "operation": "Side seam repair",
+        "units": 82,
+        "hours": 29,
+        "cost": 1015,
+        "status": "Planned"
+      }
+    ],
+    "groundTruth": {
+      "confirmed": [
+        "B-1042",
+        "B-1044",
+        "B-1038"
+      ],
+      "precautionary": [
+        "B-1043"
+      ],
+      "unrelated": [
+        "B-1045",
+        "B-1046"
+      ],
+      "cause": "MG-7 post-maintenance tension drift and missing setup sign-off"
+    },
+    "inspections": [
+      {
+        "id": "INS-611",
+        "batch": "B-1042",
+        "stage": "Final random",
+        "date": "2026-10-12",
+        "sample": 200,
+        "defects": 12,
+        "type": "Open seam",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "R. Akter",
+        "operation": "Side seam sewing",
+        "disposition": "Fail",
+        "evidence": "Photo set EV-611; 12/200 units",
+        "notes": "Seam opens under light pull at 18–24 cm from hem."
+      },
+      {
+        "id": "INS-608",
+        "batch": "B-1042",
+        "stage": "End-line",
+        "date": "2026-10-10",
+        "sample": 150,
+        "defects": 7,
+        "type": "Skipped stitch",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "M. Rahman",
+        "operation": "Side seam sewing",
+        "disposition": "Fail",
+        "evidence": "End-line sheet EV-608",
+        "notes": "Repeated skipped stitches after machine setup."
+      },
+      {
+        "id": "INS-604",
+        "batch": "B-1043",
+        "stage": "Final random",
+        "date": "2026-10-12",
+        "sample": 200,
+        "defects": 2,
+        "type": "Open seam",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "R. Akter",
+        "operation": "Side seam sewing",
+        "disposition": "Pass",
+        "evidence": "Sampling sheet EV-604",
+        "notes": "Shared thread and fabric lot; different line and machine."
+      },
+      {
+        "id": "INS-613",
+        "batch": "B-1044",
+        "stage": "End-line",
+        "date": "2026-10-13",
+        "sample": 200,
+        "defects": 8,
+        "type": "Open seam",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "M. Rahman",
+        "operation": "Side seam sewing",
+        "disposition": "Fail",
+        "evidence": "Photo set EV-613",
+        "notes": "Same machine group as B-1042; different fabric and thread lots."
+      },
+      {
+        "id": "INS-590",
+        "batch": "B-1038",
+        "stage": "Pre-shipment",
+        "date": "2026-10-07",
+        "sample": 200,
+        "defects": 4,
+        "type": "Open seam",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "S. Islam",
+        "operation": "Side seam sewing",
+        "disposition": "Pass",
+        "evidence": "Sampling sheet EV-590",
+        "notes": "Marginal rate before complaint; same machine group."
+      },
+      {
+        "id": "INS-615",
+        "batch": "B-1045",
+        "stage": "Final random",
+        "date": "2026-10-13",
+        "sample": 200,
+        "defects": 2,
+        "type": "Uneven stitching",
+        "location": "Shoulder",
+        "severity": "Minor",
+        "threshold": 2.5,
+        "inspector": "T. Khan",
+        "operation": "Shoulder sewing",
+        "disposition": "Pass",
+        "evidence": "Sampling sheet EV-615",
+        "notes": ""
+      },
+      {
+        "id": "INS-616",
+        "batch": "B-1046",
+        "stage": "In-line",
+        "date": "2026-10-13",
+        "sample": 120,
+        "defects": 1,
+        "type": "Measurement deviation",
+        "location": "Waist",
+        "severity": "Minor",
+        "threshold": 2.5,
+        "inspector": "T. Khan",
+        "operation": "Waistband",
+        "disposition": "Pass",
+        "evidence": "Sampling sheet EV-616",
+        "notes": ""
+      },
+      {
+        "id": "INS-602",
+        "batch": "B-1042",
+        "stage": "Incoming material",
+        "date": "2026-10-07",
+        "sample": 80,
+        "defects": 0,
+        "type": "Fabric hole",
+        "location": "Fabric",
+        "severity": "Minor",
+        "threshold": 2.5,
+        "inspector": "S. Islam",
+        "operation": "Material receiving",
+        "disposition": "Pass",
+        "evidence": "Material report EV-602",
+        "notes": ""
+      },
+      {
+        "id": "INS-607",
+        "batch": "B-1042",
+        "stage": "In-line",
+        "date": "2026-10-09",
+        "sample": 100,
+        "defects": 4,
+        "type": "Skipped stitch",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "M. Rahman",
+        "operation": "Side seam sewing",
+        "disposition": "Fail",
+        "evidence": "Line sheet EV-607",
+        "notes": ""
+      },
+      {
+        "id": "INS-610",
+        "batch": "B-1042",
+        "stage": "Finishing",
+        "date": "2026-10-11",
+        "sample": 100,
+        "defects": 3,
+        "type": "Open seam",
+        "location": "Side seam",
+        "severity": "Major",
+        "threshold": 2.5,
+        "inspector": "R. Akter",
+        "operation": "Finishing",
+        "disposition": "Fail",
+        "evidence": "Finishing sheet EV-610",
+        "notes": ""
+      }
+    ],
+    "complaints": [
+      {
+        "id": "CMP-207",
+        "batch": "B-1038",
+        "sku": "ST-204",
+        "customer": "Northline Retail",
+        "date": "2026-10-13",
+        "text": "Side seam came apart after one wear; stitching looks loose.",
+        "category": "Open seam",
+        "severity": "High",
+        "decision": "Human reviewed",
+        "cost": 1240
+      },
+      {
+        "id": "CMP-208",
+        "batch": "B-1038",
+        "sku": "ST-204",
+        "customer": "Northline Retail",
+        "date": "2026-10-14",
+        "text": "Shirt opened along the side seam during use.",
+        "category": "Open seam",
+        "severity": "High",
+        "decision": "Pending review",
+        "cost": 620
+      },
+      {
+        "id": "CMP-202",
+        "batch": "B-1045",
+        "sku": "TS-118",
+        "customer": "Field & Form",
+        "date": "2026-10-11",
+        "text": "Minor loose thread on shoulder.",
+        "category": "Trimming problem",
+        "severity": "Low",
+        "decision": "Human reviewed",
+        "cost": 90
+      }
+    ],
+    "shipments": [
+      {
+        "id": "SHP-909",
+        "batch": "B-1038",
+        "units": 2500,
+        "date": "2026-10-08",
+        "status": "Delivered",
+        "destination": "United Kingdom",
+        "cutoff": "2026-10-08"
+      },
+      {
+        "id": "SHP-912",
+        "batch": "B-1042",
+        "units": 600,
+        "date": "2026-10-11",
+        "status": "In transit",
+        "destination": "United Kingdom",
+        "cutoff": "2026-10-11"
+      },
+      {
+        "id": "SHP-918",
+        "batch": "B-1042",
+        "units": 1800,
+        "date": "2026-10-19",
+        "status": "Blocked",
+        "destination": "United Kingdom",
+        "cutoff": "2026-10-18"
+      },
+      {
+        "id": "SHP-919",
+        "batch": "B-1043",
+        "units": 2200,
+        "date": "2026-10-19",
+        "status": "Planned",
+        "destination": "United Kingdom",
+        "cutoff": "2026-10-18"
+      },
+      {
+        "id": "SHP-920",
+        "batch": "B-1044",
+        "units": 2100,
+        "date": "2026-10-19",
+        "status": "Pending inspection",
+        "destination": "United Kingdom",
+        "cutoff": "2026-10-18"
+      }
+    ],
+    "incident": {
+      "id": "INC-026",
+      "title": "Side seam integrity — Essential Poplin Shirt",
+      "opened": "2026-10-13",
+      "severity": "High",
+      "leader": "Nadia Rahman",
+      "stage": "Containment",
+      "hold": true,
+      "shipmentBlock": true,
+      "cause": "Machine tension drift on MG-7 is the leading hypothesis; verification pending.",
+      "causeConfirmed": false,
+      "approval": false,
+      "verification": {
+        "d30": false,
+        "d60": false,
+        "d90": false
+      },
+      "closed": false,
+      "notes": "",
+      "selectedScenario": "Inspect + targeted rework"
+    },
+    "actions": [
+      {
+        "id": "ACT-01",
+        "title": "Quarantine B-1042 and block shipment",
+        "type": "Containment",
+        "owner": "M. Rahman",
+        "role": "Factory quality",
+        "due": "2026-10-14",
+        "status": "Done",
+        "evidence": "Hold ticket H-1042; shipment block SHP-918",
+        "required": true
+      },
+      {
+        "id": "ACT-02",
+        "title": "Verify MG-7 tension and needle timing",
+        "type": "Investigation",
+        "owner": "Sewing supervisor",
+        "role": "Production",
+        "due": "2026-10-15",
+        "status": "In progress",
+        "evidence": "",
+        "required": true
+      },
+      {
+        "id": "ACT-03",
+        "title": "Inspect related B-1044 and shipped B-1038 samples",
+        "type": "Containment",
+        "owner": "R. Akter",
+        "role": "Quality inspector",
+        "due": "2026-10-16",
+        "status": "Open",
+        "evidence": "",
+        "required": true
+      },
+      {
+        "id": "ACT-04",
+        "title": "Approve revised setup standard and retrain operators",
+        "type": "Corrective",
+        "owner": "Factory manager",
+        "role": "Factory management",
+        "due": "2026-10-18",
+        "status": "Open",
+        "evidence": "",
+        "required": true
+      },
+      {
+        "id": "ACT-05",
+        "title": "Run 30/60/90-day verification",
+        "type": "Preventive",
+        "owner": "Customer quality",
+        "role": "Verification",
+        "due": "2027-01-12",
+        "status": "Open",
+        "evidence": "",
+        "required": true
+      }
+    ],
+    "interventions": [
+      {
+        "name": "Machine maintenance + setup control",
+        "cost": 1900,
+        "days": 2,
+        "reduction": 74,
+        "confidence": 78,
+        "delivery": "Low",
+        "safety": "Improves equipment stability",
+        "sustainability": "Less scrap",
+        "standardize": "High"
+      },
+      {
+        "name": "Operator retraining",
+        "cost": 720,
+        "days": 1,
+        "reduction": 38,
+        "confidence": 59,
+        "delivery": "Low",
+        "safety": "Lower fatigue risk",
+        "sustainability": "Less rework",
+        "standardize": "High"
+      },
+      {
+        "name": "100% in-line inspection",
+        "cost": 3100,
+        "days": 3,
+        "reduction": 57,
+        "confidence": 70,
+        "delivery": "Medium",
+        "safety": "More repetitive handling",
+        "sustainability": "More handling",
+        "standardize": "Medium"
+      },
+      {
+        "name": "Supplier thread change",
+        "cost": 4600,
+        "days": 9,
+        "reduction": 12,
+        "confidence": 25,
+        "delivery": "High",
+        "safety": "Neutral",
+        "sustainability": "Possible waste",
+        "standardize": "Medium"
+      }
+    ],
+    "lessons": [
+      {
+        "id": "LES-01",
+        "title": "Shared material is not sufficient proof",
+        "text": "B-1043 shares fabric and thread with B-1042 but has a low defect rate on a different machine. Treat as precautionary monitoring.",
+        "case": "INC-026",
+        "date": "2026-10-14"
+      },
+      {
+        "id": "LES-02",
+        "title": "Complaint signal predates final failure",
+        "text": "B-1038 complaints describe side seam opening after use. Link the customer language to the same location and verify returned garments.",
+        "case": "INC-026",
+        "date": "2026-10-14"
+      }
+    ],
+    "recoveryInputs": {
+      "inspectors": 4,
+      "stations": 2,
+      "inspectRate": 40,
+      "reworkLines": 1,
+      "reworkRate": 55
+    },
+    "scenario": {
+      "id": "14-rework-bottleneck",
+      "title": "Rework bottleneck",
+      "description": "Approved line can repair only 55 units per day",
+      "focus": "Expose rework-driven shipment delay"
+    }
+  }
+}

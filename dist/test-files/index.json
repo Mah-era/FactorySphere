@@ -1,0 +1,142 @@
+[
+  {
+    "id": "01-baseline-seam",
+    "title": "Baseline seam failure",
+    "description": "Original MG-7 seam defect and late complaint",
+    "focus": "Trace confirmed and precautionary scope",
+    "file": "01-baseline-seam.json"
+  },
+  {
+    "id": "02-shared-material-control",
+    "title": "Shared material control",
+    "description": "B-1043 shares fabric and thread but performs well on MG-3",
+    "focus": "Avoid false containment from shared lot alone",
+    "file": "02-shared-material-control.json"
+  },
+  {
+    "id": "03-cross-lot-machine",
+    "title": "Cross-lot machine pattern",
+    "description": "MG-7 fails on two different fabric and thread combinations",
+    "focus": "Prioritize machine hypothesis over material",
+    "file": "03-cross-lot-machine.json"
+  },
+  {
+    "id": "04-late-customer-complaint",
+    "title": "Late customer complaint",
+    "description": "An additional complaint arrives after B-1038 delivery",
+    "focus": "Extend exposure to already shipped units",
+    "file": "04-late-customer-complaint.json"
+  },
+  {
+    "id": "05-missing-endline-data",
+    "title": "Missing end-line data",
+    "description": "B-1044 inspection result is missing despite a planted defect",
+    "focus": "Measure missed affected units and recall",
+    "file": "05-missing-endline-data.json"
+  },
+  {
+    "id": "06-same-defect-different-cause",
+    "title": "Same defect, different cause",
+    "description": "A knit tee has an open seam caused by an unrelated thread snag",
+    "focus": "Challenge cross-case alert precision",
+    "file": "06-same-defect-different-cause.json"
+  },
+  {
+    "id": "07-night-shift-change",
+    "title": "Night shift change",
+    "description": "A night-shift batch fails after machine reassignment",
+    "focus": "Compare shift, machine and operator explanations",
+    "file": "07-night-shift-change.json"
+  },
+  {
+    "id": "08-shade-cluster",
+    "title": "Fabric shade cluster",
+    "description": "Shade variation clusters on the shared fabric lot",
+    "focus": "Separate material defect from seam incident",
+    "file": "08-shade-cluster.json"
+  },
+  {
+    "id": "09-measurement-deviation",
+    "title": "Measurement deviation",
+    "description": "A trouser batch fails waistband measurement",
+    "focus": "Surface a distinct factory and operation signal",
+    "file": "09-measurement-deviation.json"
+  },
+  {
+    "id": "10-critical-label",
+    "title": "Critical label error",
+    "description": "Wrong care labels appear on finished shirts",
+    "focus": "Test critical classification and shipment hold",
+    "file": "10-critical-label.json"
+  },
+  {
+    "id": "11-packing-after-shipment",
+    "title": "Packing complaint after shipment",
+    "description": "Customer feedback reports a size assortment error",
+    "focus": "Connect post-shipment quality to packing lot",
+    "file": "11-packing-after-shipment.json"
+  },
+  {
+    "id": "12-trim-supplier-issue",
+    "title": "Trim supplier issue",
+    "description": "Buttons and labels from a trim lot fail incoming review",
+    "focus": "Flag supplier corrective action separately",
+    "file": "12-trim-supplier-issue.json"
+  },
+  {
+    "id": "13-inspector-shortage",
+    "title": "Inspector shortage",
+    "description": "Only one inspector is available for containment",
+    "focus": "Recalculate recovery feasibility and delay",
+    "file": "13-inspector-shortage.json"
+  },
+  {
+    "id": "14-rework-bottleneck",
+    "title": "Rework bottleneck",
+    "description": "Approved line can repair only 55 units per day",
+    "focus": "Expose rework-driven shipment delay",
+    "file": "14-rework-bottleneck.json"
+  },
+  {
+    "id": "15-inspection-handling-risk",
+    "title": "Inspection handling risk",
+    "description": "Extra handling cost and slower inspection raise containment cost",
+    "focus": "Compare full inspection with selective sampling",
+    "file": "15-inspection-handling-risk.json"
+  },
+  {
+    "id": "16-inspection-cost-exceeds-loss",
+    "title": "Inspection exceeds expected loss",
+    "description": "Appraisal spend exceeds modeled failure exposure",
+    "focus": "Challenge blanket 100% inspection",
+    "file": "16-inspection-cost-exceeds-loss.json"
+  },
+  {
+    "id": "17-negative-prevention-roi",
+    "title": "Negative preventive ROI",
+    "description": "Low recurrence and low effectiveness make investment unattractive",
+    "focus": "Show sensitivity and net benefit",
+    "file": "17-negative-prevention-roi.json"
+  },
+  {
+    "id": "18-quality-gain-delivery-loss",
+    "title": "Quality gain, delivery loss",
+    "description": "Defects fall but the approved intervention slows throughput",
+    "focus": "Require adverse-effect review before standardization",
+    "file": "18-quality-gain-delivery-loss.json"
+  },
+  {
+    "id": "19-corrective-action-fails",
+    "title": "Corrective action fails",
+    "description": "Defect rate rises after the chosen action",
+    "focus": "Reopen investigation and retain failed assumption",
+    "file": "19-corrective-action-fails.json"
+  },
+  {
+    "id": "20-evidence-gate",
+    "title": "Evidence gate blocks closure",
+    "description": "Actions are marked done without supporting evidence",
+    "focus": "Verify closure remains blocked",
+    "file": "20-evidence-gate.json"
+  }
+]

@@ -10,6 +10,8 @@ python3 -m http.server 8765 --directory dist
 
 Open `http://localhost:8765`. The app has no build step. Edits are saved in the current browser's local storage. **Reset demo** restores the supplied test data.
 
+The dashboard includes **20 scenario files** in [`dist/test-files`](dist/test-files), plus a ZIP download. Choose a case in the selector and click **Load case**, or upload one of the JSON files. Uploading a CSV appends inspection records to the active case; [`inspection-template.csv`](dist/test-files/inspection-template.csv) shows the required columns. Use **Download report** for a printable HTML report or **Export CSV** for a flat data report. Both apply the current dashboard filters.
+
 ## Included workflows
 
 - Follow complaints and failed inspections through SKU, order, production, operation, machine, team, material lot, fabric roll, packing, inventory and shipment.
@@ -24,6 +26,8 @@ Open `http://localhost:8765`. The app has no build step. Edits are saved in the 
 ## Test data and validation
 
 Run `node scripts/validate-data.mjs` to check relationships and the planted control cases. The Learning page reports batch-tracing precision, recall, missed affected units and false hold units against `seed.groundTruth`. The expected initial classification is confirmed `B-1042`, `B-1044`, `B-1038`; precautionary `B-1043`; unrelated `B-1045`, `B-1046`.
+
+Run `node scripts/generate-scenarios.mjs` to regenerate the 20 JSON cases. The generated cases cover shared-material controls, cross-lot machine failures, late complaints, incomplete data, different causes for the same defect, other defect types, inspector and rework bottlenecks, costly inspection, negative prevention ROI, delivery side effects, failed actions, and missing closure evidence.
 
 ## Demo boundaries
 

@@ -1,0 +1,2 @@
+id,batch,stage,type,location,sample,defects,inspector,date,severity,threshold,evidence,notes
+INS-UPLOAD-01,B-1042,Final random,Open seam,Side seam,100,4,Demo Inspector,2026-10-14,Major,2.5,Photo ref EV-UPLOAD,Imported test inspection

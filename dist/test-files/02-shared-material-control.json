@@ -646,7 +646,17 @@
       },
       "closed": false,
       "notes": "",
-      "selectedScenario": "Inspect + targeted rework"
+      "selectedScenario": "Inspect + targeted rework",
+      "referenceBatch": "B-1042",
+      "defectType": "Open seam"
+    },
+    "costInputs": {
+      "prevention": 1900,
+      "appraisal": 3200,
+      "internal": 5480,
+      "external": 4240,
+      "recurrence": 35,
+      "reduction": 74
     },
     "actions": [
       {

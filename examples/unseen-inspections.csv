@@ -1,0 +1,4 @@
+batch_id,style,factory_id,machine_group,production_qty,on_hand,shipped_units,inspection_date,inspection_stage,defect_type,sample_size,defective_quantity
+ZIP-701,JACKET-X,F-ZIP,MG-Z1,1000,600,400,2026-10-12,Final random,Zip failure,100,9
+ZIP-702,JACKET-X,F-ZIP,MG-Z2,800,800,0,2026-10-12,Final random,Zip failure,100,1
+ZIP-703,JACKET-X,F-ZIP,MG-Z1,500,500,0,2026-10-13,Final random,Zip failure,100,7

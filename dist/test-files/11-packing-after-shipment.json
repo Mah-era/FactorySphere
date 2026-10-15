@@ -335,40 +335,11 @@
         "meters": 3400
       }
     ],
-    "rework": [
-      {
-        "id": "RW-011",
-        "batch": "B-1042",
-        "operation": "Side seam repair",
-        "units": 72,
-        "hours": 24,
-        "cost": 840,
-        "status": "Reserved"
-      },
-      {
-        "id": "RW-012",
-        "batch": "B-1044",
-        "operation": "Side seam repair",
-        "units": 82,
-        "hours": 29,
-        "cost": 1015,
-        "status": "Planned"
-      }
-    ],
+    "rework": [],
     "groundTruth": {
       "confirmed": [
-        "B-1042",
-        "B-1044",
         "B-1038"
-      ],
-      "precautionary": [
-        "B-1043"
-      ],
-      "unrelated": [
-        "B-1045",
-        "B-1046"
-      ],
-      "cause": "MG-7 post-maintenance tension drift and missing setup sign-off"
+      ]
     },
     "inspections": [
       {
@@ -554,42 +525,6 @@
         "severity": "High",
         "decision": "Pending review",
         "cost": 740
-      },
-      {
-        "id": "CMP-207",
-        "batch": "B-1038",
-        "sku": "ST-204",
-        "customer": "Northline Retail",
-        "date": "2026-10-13",
-        "text": "Side seam came apart after one wear; stitching looks loose.",
-        "category": "Open seam",
-        "severity": "High",
-        "decision": "Human reviewed",
-        "cost": 1240
-      },
-      {
-        "id": "CMP-208",
-        "batch": "B-1038",
-        "sku": "ST-204",
-        "customer": "Northline Retail",
-        "date": "2026-10-14",
-        "text": "Shirt opened along the side seam during use.",
-        "category": "Open seam",
-        "severity": "High",
-        "decision": "Pending review",
-        "cost": 620
-      },
-      {
-        "id": "CMP-202",
-        "batch": "B-1045",
-        "sku": "TS-118",
-        "customer": "Field & Form",
-        "date": "2026-10-11",
-        "text": "Minor loose thread on shoulder.",
-        "category": "Trimming problem",
-        "severity": "Low",
-        "decision": "Human reviewed",
-        "cost": 90
       }
     ],
     "shipments": [
@@ -640,15 +575,15 @@
       }
     ],
     "incident": {
-      "id": "INC-026",
-      "title": "Side seam integrity — Essential Poplin Shirt",
-      "opened": "2026-10-13",
+      "id": "INC-011",
+      "title": "Packing error after shipment",
+      "opened": "2026-10-14",
       "severity": "High",
-      "leader": "Nadia Rahman",
-      "stage": "Containment",
-      "hold": true,
-      "shipmentBlock": true,
-      "cause": "Machine tension drift on MG-7 is the leading hypothesis; verification pending.",
+      "leader": "Scenario quality lead",
+      "stage": "Assessment",
+      "hold": false,
+      "shipmentBlock": false,
+      "cause": "",
       "causeConfirmed": false,
       "approval": false,
       "verification": {
@@ -657,128 +592,21 @@
         "d90": false
       },
       "closed": false,
-      "notes": "",
-      "selectedScenario": "Inspect + targeted rework"
+      "selectedScenario": "Inspect + targeted rework",
+      "referenceBatch": "B-1038",
+      "defectType": "Packing error"
     },
-    "actions": [
-      {
-        "id": "ACT-01",
-        "title": "Quarantine B-1042 and block shipment",
-        "type": "Containment",
-        "owner": "M. Rahman",
-        "role": "Factory quality",
-        "due": "2026-10-14",
-        "status": "Done",
-        "evidence": "Hold ticket H-1042; shipment block SHP-918",
-        "required": true
-      },
-      {
-        "id": "ACT-02",
-        "title": "Verify MG-7 tension and needle timing",
-        "type": "Investigation",
-        "owner": "Sewing supervisor",
-        "role": "Production",
-        "due": "2026-10-15",
-        "status": "In progress",
-        "evidence": "",
-        "required": true
-      },
-      {
-        "id": "ACT-03",
-        "title": "Inspect related B-1044 and shipped B-1038 samples",
-        "type": "Containment",
-        "owner": "R. Akter",
-        "role": "Quality inspector",
-        "due": "2026-10-16",
-        "status": "Open",
-        "evidence": "",
-        "required": true
-      },
-      {
-        "id": "ACT-04",
-        "title": "Approve revised setup standard and retrain operators",
-        "type": "Corrective",
-        "owner": "Factory manager",
-        "role": "Factory management",
-        "due": "2026-10-18",
-        "status": "Open",
-        "evidence": "",
-        "required": true
-      },
-      {
-        "id": "ACT-05",
-        "title": "Run 30/60/90-day verification",
-        "type": "Preventive",
-        "owner": "Customer quality",
-        "role": "Verification",
-        "due": "2027-01-12",
-        "status": "Open",
-        "evidence": "",
-        "required": true
-      }
-    ],
-    "interventions": [
-      {
-        "name": "Machine maintenance + setup control",
-        "cost": 1900,
-        "days": 2,
-        "reduction": 74,
-        "confidence": 78,
-        "delivery": "Low",
-        "safety": "Improves equipment stability",
-        "sustainability": "Less scrap",
-        "standardize": "High"
-      },
-      {
-        "name": "Operator retraining",
-        "cost": 720,
-        "days": 1,
-        "reduction": 38,
-        "confidence": 59,
-        "delivery": "Low",
-        "safety": "Lower fatigue risk",
-        "sustainability": "Less rework",
-        "standardize": "High"
-      },
-      {
-        "name": "100% in-line inspection",
-        "cost": 3100,
-        "days": 3,
-        "reduction": 57,
-        "confidence": 70,
-        "delivery": "Medium",
-        "safety": "More repetitive handling",
-        "sustainability": "More handling",
-        "standardize": "Medium"
-      },
-      {
-        "name": "Supplier thread change",
-        "cost": 4600,
-        "days": 9,
-        "reduction": 12,
-        "confidence": 25,
-        "delivery": "High",
-        "safety": "Neutral",
-        "sustainability": "Possible waste",
-        "standardize": "Medium"
-      }
-    ],
-    "lessons": [
-      {
-        "id": "LES-01",
-        "title": "Shared material is not sufficient proof",
-        "text": "B-1043 shares fabric and thread with B-1042 but has a low defect rate on a different machine. Treat as precautionary monitoring.",
-        "case": "INC-026",
-        "date": "2026-10-14"
-      },
-      {
-        "id": "LES-02",
-        "title": "Complaint signal predates final failure",
-        "text": "B-1038 complaints describe side seam opening after use. Link the customer language to the same location and verify returned garments.",
-        "case": "INC-026",
-        "date": "2026-10-14"
-      }
-    ],
+    "costInputs": {
+      "prevention": null,
+      "appraisal": null,
+      "internal": null,
+      "external": null,
+      "recurrence": null,
+      "reduction": null
+    },
+    "actions": [],
+    "interventions": [],
+    "lessons": [],
     "scenario": {
       "id": "11-packing-after-shipment",
       "title": "Packing complaint after shipment",

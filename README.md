@@ -1,34 +1,57 @@
-# Garment Quality Intelligence
+# FactorySphere
 
-A working, private browser demo for apparel quality traceability, recovery, COPQ and corrective action. It uses synthetic records with a planted MG-7 seam failure and a shared-material control batch.
+FactorySphere is a local-first browser app for apparel quality traceability, inspection analysis, exposure, recovery planning, Cost of Poor Quality, CAPA, and effectiveness verification. Uploaded data stays in the browser during local use.
+
+- Repository: https://github.com/mah-era/FactorySphere
+- Live demo: https://mah-era.github.io/FactorySphere/
 
 ## Run locally
 
-```sh
-python3 -m http.server 8765 --directory dist
-```
+From this project directory:
 
-Open `http://localhost:8765`. The app has no build step. Edits are saved in the current browser's local storage. **Reset demo** restores the supplied test data.
+    python3 scripts/serve_local.py
 
-The dashboard includes **20 scenario files** in [`dist/test-files`](dist/test-files), plus a ZIP download. Choose a case in the selector and click **Load case**, or upload one of the JSON files. Uploading a CSV appends inspection records to the active case; [`inspection-template.csv`](dist/test-files/inspection-template.csv) shows the required columns. Use **Download report** for a printable HTML report or **Export CSV** for a flat data report. Both apply the current dashboard filters.
+Open http://127.0.0.1:8765. Keep the terminal open while using the server. Stop it with Ctrl-C. The server sends no-cache headers, so reloading the page reads current app files. No LaunchAgent, background service, build, package installation, database, or internet connection is needed. The Excel reader is bundled locally in dist/vendor/.
+An open tab checks the local build version when focused and periodically; it reloads after a local update so old analysis code does not keep showing outdated calculations.
 
-## Included workflows
+## Upload your own data
 
-- Follow complaints and failed inspections through SKU, order, production, operation, machine, team, material lot, fabric roll, packing, inventory and shipment.
-- Record inspections across incoming, in-line, end-line, finishing, final, pre-shipment and warehouse stages. Defect rates and exposure update when a record is saved.
-- Review volume-adjusted alerts, Pareto counts, customer complaint classification, and confirmed versus precautionary scope.
-- Investigate with evidence comparisons, 5 Whys, fishbone categories, a reviewer and a cause-verification gate.
-- Compare inspection, rework, sampling, replacement and split-shipment recovery options using adjustable capacity and cut-off dates.
-- Change COPQ and recurrence assumptions to see expected loss, avoided loss, ROI and payback.
-- Assign CAPA actions with owners, deadlines, evidence, management approval, audit entries and closure gates.
-- Record 30/60/90-day effectiveness checks, adverse effects, lessons and validation metrics against planted ground truth.
+Use Upload files on the Overview page. Uploads replace the active dataset and recalculate the dashboard, traceability, inspections, investigation comparisons, recovery estimates, costs, CAPA, verification, and reports. The source panel shows the file name, load time, sample count, and defect count. Other local tabs update to the same dataset. Browser IndexedDB retains the active dataset across reloads, including larger files; a storage warning appears if the browser cannot save it.
 
-## Test data and validation
+Supported inputs:
 
-Run `node scripts/validate-data.mjs` to check relationships and the planted control cases. The Learning page reports batch-tracing precision, recall, missed affected units and false hold units against `seed.groundTruth`. The expected initial classification is confirmed `B-1042`, `B-1044`, `B-1038`; precautionary `B-1043`; unrelated `B-1045`, `B-1046`.
+- One JSON file containing inspections and optional batches, shipments, complaints, actions, costInputs, recoveryInputs, and other related arrays. The included test JSON files show the full schema.
+- One flat CSV/TSV/XLSX/XLS file with at least batch, sample, defects, and type columns. Common aliases such as batch_id, sample_size, defective_quantity, and defect_type work. Batch attributes on each row are used to infer production batches.
+- Several related CSV/TSV/Excel files in one upload. Name them Inspections, Batches, Shipments, Complaints, Actions, and so on. Excel workbooks can use corresponding sheet names.
 
-Run `node scripts/generate-scenarios.mjs` to regenerate the 20 JSON cases. The generated cases cover shared-material controls, cross-lot machine failures, late complaints, incomplete data, different causes for the same defect, other defect types, inspector and rework bottlenecks, costly inspection, negative prevention ROI, delivery side effects, failed actions, and missing closure evidence.
+See dist/test-files/inspection-template.csv, examples/unseen-inspections.csv, and examples/unseen-multisheet.xlsx. The latter two are independent examples with defects and batches absent from the 20 prepared cases.
 
-## Demo boundaries
+The minimum data gives inspection rates and a basic exposure classification. If both a result and acceptance threshold are missing, a 2.5% screening rule flags elevated records for review; those records remain precautionary until a reviewer records a Pass/Fail result with evidence or an approved threshold is supplied in the file. The Quality signals page has a review control for each inspection. Add SKU, factory, machine/line, material lots, stock, shipments, costs, and action records for stronger conclusions. Missing fields are shown as unavailable rather than filled from demo data. Sample size is never substituted for unknown production volume. Undated inspections cannot support time-based effectiveness verification. The app distinguishes confirmed evidence from precautionary links; a reviewer decides root cause and final disposition.
+Dates should use `YYYY-MM-DD`; day/month/year is also accepted and interpreted day first when ambiguous. Add `accepted_units` per batch to calculate cost per acceptable garment. Shipped quantities can be read from shipment records when the batch table omits them.
 
-This is a client-side demonstration. It does not share records across users, securely enforce roles, store uploaded evidence, connect factory systems, or run a production optimizer. Evidence references and approval checks model the workflow; they are not authenticated signatures. Scheduling and cost use explicit editable assumptions rather than a full shop-floor capacity model. A production rollout needs a server database, identity and role enforcement, immutable audit history, file storage, and integration with ERP, inspection, and logistics systems.
+## Twenty test cases
+
+dist/test-files/ contains 20 synthetic JSON scenarios and scenarios.zip. Select one from Try a built-in case and click Load case, or upload its JSON file. Scenarios cover shared material controls, different causes of the same defect, incomplete inspections, delayed complaints, capacity bottlenecks, cost tradeoffs, weak corrective actions, and missing closure evidence.
+
+## Workflows
+
+- Choose a defect and reference batch; inspect product genealogy and scope rationale.
+- Filter the dashboard by factory and exposure classification.
+- Add inspections and review customer complaint records.
+- Compare defect patterns by machine, material lot, line, thread, shift, and team; record an evidence-backed cause and reviewer.
+- Adjust inspection and rework capacity; compare five estimated recovery options when confirmed and related stock quantities are complete. A split shipment shows both the priority release and full completion dates; one inspector is assigned per station.
+- Enter prevention, appraisal, internal failure, external failure, recurrence, and reduction assumptions; review COPQ and expected prevention return.
+- Maintain containment, CAPA ownership, approval, evidence, and 30/60/90-day verification. Record a corrective action completion date, a separate date and evidence reference for each later check, and post-action inspection evidence. Closure is blocked until required gates pass and the observed defect rate improves without a recorded negative effect.
+- Download an HTML report or CSV export calculated from the active file and selected defect focus, including exposure, inspections, cost categories, recovery alternatives, verification checks, CAPA actions, and audit events.
+
+## Validation
+
+    node scripts/validate-data.mjs
+    node scripts/validate-scenarios.mjs
+    node scripts/validate-local.mjs
+
+The local validation covers all 20 scenarios plus unseen JSON, flat CSV, and multiple related CSV tables. The browser workflow was also checked with the included independent CSV and XLSX examples.
+
+## Operational limits
+
+This is a single-browser local analysis tool. It does not synchronize users, authenticate approvals, store binary evidence, integrate ERP/inspection systems, or optimize a minute-by-minute factory schedule. The recovery model uses stated capacity and cost assumptions. Uploaded files are limited to 20 MB total. Use a database, access control, durable evidence store, and integration services for a multi-user production deployment.

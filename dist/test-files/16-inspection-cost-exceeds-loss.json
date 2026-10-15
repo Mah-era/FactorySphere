@@ -646,7 +646,17 @@
       },
       "closed": false,
       "notes": "",
-      "selectedScenario": "Inspect + targeted rework"
+      "selectedScenario": "Inspect + targeted rework",
+      "referenceBatch": "B-1042",
+      "defectType": "Open seam"
+    },
+    "costInputs": {
+      "prevention": 1900,
+      "appraisal": 11000,
+      "internal": 1400,
+      "external": 900,
+      "recurrence": 12,
+      "reduction": 50
     },
     "actions": [
       {
@@ -767,14 +777,6 @@
         "date": "2026-10-14"
       }
     ],
-    "costInputs": {
-      "prevention": 1900,
-      "appraisal": 11000,
-      "internal": 1400,
-      "external": 900,
-      "recurrence": 12,
-      "reduction": 50
-    },
     "scenario": {
       "id": "16-inspection-cost-exceeds-loss",
       "title": "Inspection exceeds expected loss",

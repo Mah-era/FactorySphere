@@ -1,0 +1,80 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {seed} from '../dist/data.js';
+import {normalizeDataset,deriveAnalysis,recoveryOptions,deriveEffectiveness} from '../dist/analysis-core.js';
+import {interval,controlSeries,groupRates,scheduleRecovery,PLANNING_DEFAULTS,governanceGates,comparableEffect,costSensitivity,actionBlockers,operatingMetrics} from '../dist/intelligence.js';
+import {applyWorkspaceCommand,analyticalReport} from '../dist/workspace-actions.js';
+import {overviewPage,intelligencePanels,dataPage,customersPage,containmentPage} from '../dist/presentation.js';
+
+const ci=interval(10,100);
+assert(Math.abs(ci.low-5.5229)<.01);assert(Math.abs(ci.high-17.4367)<.01);
+assert.equal(interval(0,0),null);assert(interval(0,100).high>0);
+const p=controlSeries([{id:'a',date:'2026-01-01',sample:100,defects:10},{id:'b',date:'2026-01-02',sample:400,defects:40}]);
+assert.equal(p.mean,10);assert(Math.abs(p.points[0].high-19)<1e-9);assert.equal(p.points[1].high,14.500000000000002);
+assert(controlSeries([{id:'undated',sample:100,defects:5}]).points.length===0);
+const db=normalizeDataset({batches:[{id:'B',sku:'A',factory:'F',line:'L',units:100,inventory:100,shipped:0}],inspections:[{id:'I',batch:'B',type:'Seam',stage:'Final',date:'2026-10-10',sample:100,defects:10,disposition:'Fail'}],costInputs:{prevention:20,appraisal:30,internal:100,external:50,recurrence:50,reduction:50}},'independent');
+const a=deriveAnalysis(db),plans=scheduleRecovery(db,a,recoveryOptions(db,a),'2026-10-15');
+assert.equal(plans.length,7);assert.equal(plans[0].complete,'2026-10-19');
+assert.equal(plans[0].reworkUnits,10);assert.equal(plans[0].inspectionHours,2.5);
+assert(Math.abs(plans[0].cost-75.25)<1e-8);
+assert(plans[0].stages.every((s,i,list)=>i===0||s.start===list[i-1].end));
+assert.equal(plans[6].replacementUnits,100);assert.equal(plans[6].costs.scrap,100);
+assert(plans[4].firstRelease<=plans[4].complete);
+const slower=structuredClone(db);slower.workspace.planning={skillAvailability:50,machineAvailability:50};
+assert(scheduleRecovery(slower,a,recoveryOptions(slower,a),'2026-10-15')[0].totalDays>plans[0].totalDays);
+const sensitivity=costSensitivity(db,a);assert.equal(sensitivity.failure,150);assert.equal(sensitivity.points[5].avoided,37.5);assert.equal(sensitivity.points[5].net,17.5);
+assert(Math.abs(sensitivity.breakEven-26.6666667)<.0001);
+assert.throws(()=>normalizeDataset({...db,workspace:{planning:{machineAvailability:0}}}),/greater than zero/);
+assert.throws(()=>normalizeDataset({...db,workspace:{hypotheses:'bad'}}),/array/);
+const falseFlags=normalizeDataset({...db,incident:{closed:'false',approval:'false',hold:'false'}});assert.equal(falseFlags.incident.closed,false);assert.equal(falseFlags.incident.hold,false);
+const aq=normalizeDataset({inspections:[{batch:'AQL',type:'Seam',sample:100,defects:7,aql:6.5}]});assert(aq.inspections[0].thresholdAssumed);assert.equal(deriveAnalysis(aq).confirmed.length,0);
+
+db.actions=[{id:'A1',owner:'Owner',required:true,status:'Open',type:'Corrective',evidence:'',completedAt:''},{id:'A2',owner:'Owner 2',required:true,status:'Open',type:'Corrective',evidence:'',completedAt:''}];
+applyWorkspaceCommand(db,'raci-form',{id:'A2',accountable:'Manager',verifier:'QA',dependsOn:'A1'});
+assert.deepEqual(actionBlockers(db,db.actions[1]),['A1']);
+assert.throws(()=>applyWorkspaceCommand(db,'raci-form',{id:'A1',accountable:'Manager',verifier:'QA',dependsOn:'A2'}),/cycle/);
+assert.throws(()=>applyWorkspaceCommand(db,'raci-form',{id:'A1',accountable:'Manager',verifier:'QA',dependsOn:'Unknown'}),/existing/);
+assert.throws(()=>applyWorkspaceCommand(db,'containment-form',{action:'Hold',batches:'B',owner:'QA',due:'2026-10-20',status:'Complete'}),/evidence/);
+applyWorkspaceCommand(db,'containment-form',{action:'Hold',batches:'B',owner:'QA',due:'2026-10-20',status:'Planned',evidence:''});
+applyWorkspaceCommand(db,'containment-update-form',{id:db.workspace.containment[0].id,status:'Complete',evidence:'EV-1'});
+applyWorkspaceCommand(db,'whys-form',{why0:'First reason',why1:'Second reason'});
+applyWorkspaceCommand(db,'hypothesis-form',{category:'Machine',hypothesis:'Timing drift',test:'Compare setup records',reviewer:'QA',status:'Supported',evidence:'I'});
+assert.throws(()=>applyWorkspaceCommand(db,'hypothesis-form',{category:'Machine',hypothesis:'Timing drift',test:'Compare setup records',reviewer:'QA',status:'Supported'}),/evidence/);
+assert.throws(()=>applyWorkspaceCommand(db,'planning-form',{...PLANNING_DEFAULTS,shiftHours:25}),/24/);
+assert.throws(()=>applyWorkspaceCommand(db,'planning-form',{...PLANNING_DEFAULTS,workingDays:5.5}),/workdays/);
+applyWorkspaceCommand(db,'planning-form',{...PLANNING_DEFAULTS,workingDays:6});
+const restored=normalizeDataset(JSON.parse(JSON.stringify(db)),'restore');
+assert.equal(restored.workspace.whys[1],'Second reason');assert.equal(restored.workspace.containment[0].evidence,'EV-1');assert.equal(restored.actions[1].dependsOn,'A1');
+assert(governanceGates(restored).some(([,pass])=>!pass));
+
+const base=normalizeDataset(seed),ba=deriveAnalysis(base),bp=scheduleRecovery(base,ba,recoveryOptions(base,ba),'2026-10-15');
+const effect=deriveEffectiveness(base,ba);assert.equal(comparableEffect(base,ba,effect).comparable,false);
+const unknownCohort=structuredClone(db);unknownCohort.batches[0].line='';
+assert.equal(comparableEffect(unknownCohort,deriveAnalysis(unknownCohort),{baseline:unknownCohort.inspections,post:unknownCohort.inspections}).comparable,false);
+const ledgerOnly=structuredClone(db);ledgerOnly.costInputs.prevention=null;ledgerOnly.workspace.costLedger=[{id:'P1',category:'prevention',amount:20}];ledgerOnly.workspace.economics={incidentsPerYear:4};
+const ledgerAnalysis=deriveAnalysis(ledgerOnly);
+assert.equal(Object.fromEntries(ledgerAnalysis.costRows).Prevention,20);
+assert(intelligencePanels('cost',ledgerOnly,ledgerAnalysis,plans,{}).includes('1.6 months'));
+const ownership=structuredClone(db);ownership.actions.forEach(x=>Object.assign(x,{status:'Done',evidence:'EV',completedAt:'2026-10-01',dependsOn:'',accountable:'',verifier:''}));
+assert.equal(governanceGates(ownership,'2026-10-15').find(([label])=>label.includes('accountability'))[1],false);
+assert(groupRates(base,ba.focusRows,'machine').every(g=>g.ci&&g.sample>0));
+assert(operatingMetrics(base,ba).cells.every(c=>c.severityPoints>=c.rate));
+const state={selectedRecovery:bp[0].name,selectedBatch:ba.reference.id,focusDefect:'Auto',referenceBatch:'Auto',factoryFilter:'All',scopeFilter:'All'};
+assert(overviewPage(base,ba,bp,state).includes('Factory')||overviewPage(base,ba,bp,state).includes('Quality, connected.'));
+for(const view of ['trace','quality','investigate','recovery','cost','capa','learning'])assert(!intelligencePanels(view,base,ba,bp,state).includes('NaN'));
+assert(dataPage(base,ba,[],'').includes('Data completeness'));
+assert(customersPage(base).includes('Save review'));
+assert(containmentPage(base,ba,bp).includes('Record containment'));
+const report=analyticalReport(db,a,plans),html=analyticalReport(db,a,plans,true);
+assert.equal(report.recoveryPlans[0].complete,'2026-10-19');assert(html.includes('Timing drift'));assert(html.includes('Five Whys'));
+db.workspace.hypotheses[0].hypothesis='<script>alert(1)</script>';
+assert(!analyticalReport(db,a,plans,true).includes('<script>alert'));
+
+const manifest=JSON.parse(readFileSync(new URL('../dist/test-files/index.json',import.meta.url)));
+for(const item of [...manifest,{file:'enterprise-demonstration.json'}]){
+  const fixture=normalizeDataset(JSON.parse(readFileSync(new URL('../dist/test-files/'+item.file,import.meta.url))));
+  const analysis=deriveAnalysis(fixture),options=scheduleRecovery(fixture,analysis,recoveryOptions(fixture,analysis),'2026-10-15');
+  for(const option of options){assert(Number.isFinite(option.cost));assert(option.totalDays>0);assert(option.reworkUnits>=0);assert(option.unitsBeforeCutoff===null||option.unitsBeforeCutoff>=0);assert(option.cost>=0);assert(option.stages.every((s,i,list)=>s.duration>0&&(i===0||s.start===list[i-1].end)));}
+  for(const view of ['trace','quality','investigate','recovery','cost','capa','learning'])assert(!intelligencePanels(view,fixture,analysis,options,{...state,selectedBatch:analysis.reference.id}).includes('NaN'),item.file+': '+view);
+}
+console.log('Passed intelligence regression: independent statistical and scheduling oracles, 20 cases + extended demo, seven recovery strategies, persistence, dependencies, governance, malformed input and report escaping.');

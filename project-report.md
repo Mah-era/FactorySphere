@@ -1,5 +1,7 @@
 # FactorySphere — Garment Quality Traceability, Recovery & Corrective Action Intelligence Platform
 
+> **15 October 2026 — Version 2 update:** [TRANSFORMATION.md](TRANSFORMATION.md) is the current implementation and assurance addendum. It documents the desktop redesign, eleven workspaces, seven recovery strategies, statistical methods, data quality, RACI/dependencies, local evidence attachments, exports, validation and the full requirements coverage matrix. Where this older report conflicts with the addendum, the addendum describes the current implementation. Central authentication, immutable audit retention and live factory integrations remain production deployment work.
+
 ## Comprehensive Project Report
 
 **Project type:** Local-first apparel quality management and decision-support web application  

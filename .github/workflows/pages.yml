@@ -23,8 +23,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate data and decision models
+        run: |
+          node scripts/validate-data.mjs
+          node scripts/validate-scenarios.mjs
+          node scripts/validate-local.mjs
+          node scripts/validate-intelligence.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Version browser assets
+        run: node scripts/version-assets.mjs
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:

@@ -2,6 +2,8 @@
 
 FactorySphere is a local-first browser app for apparel quality traceability, inspection analysis, exposure, recovery planning, Cost of Poor Quality, CAPA, and effectiveness verification. Uploaded data stays in the browser during local use.
 
+Version 2 adds a redesigned desktop workspace, statistical quality monitoring, evidence-linked investigation, seven recovery strategies, cost sensitivity, stronger CAPA gates and a dedicated data workspace. [Implementation, formulas, requirements coverage and boundaries](TRANSFORMATION.md) documents the full transformation.
+
 - Repository: https://github.com/mah-era/FactorySphere
 - Live demo: https://mah-era.github.io/FactorySphere/
 
@@ -16,7 +18,7 @@ An open tab checks the local build version when focused and periodically; it rel
 
 ## Upload your own data
 
-Use Upload files on the Overview page. Uploads replace the active dataset and recalculate the dashboard, traceability, inspections, investigation comparisons, recovery estimates, costs, CAPA, verification, and reports. The source panel shows the file name, load time, sample count, and defect count. Other local tabs update to the same dataset. Browser IndexedDB retains the active dataset across reloads, including larger files; a storage warning appears if the browser cannot save it.
+Use **Import data** from any workspace. Uploads replace the active dataset and recalculate the dashboard, traceability, inspections, investigation comparisons, recovery estimates, costs, CAPA, verification, and reports. **Data workspace** shows source details and completeness. Download a workspace JSON snapshot to preserve edits and attached evidence before switching datasets. Other local tabs update to the same dataset. Browser IndexedDB retains the active dataset across reloads, including larger files; a storage warning appears if the browser cannot save it.
 
 Supported inputs:
 
@@ -31,7 +33,7 @@ Dates should use `YYYY-MM-DD`; day/month/year is also accepted and interpreted d
 
 ## Twenty test cases
 
-dist/test-files/ contains 20 synthetic JSON scenarios and scenarios.zip. Select one from Try a built-in case and click Load case, or upload its JSON file. Scenarios cover shared material controls, different causes of the same defect, incomplete inspections, delayed complaints, capacity bottlenecks, cost tradeoffs, weak corrective actions, and missing closure evidence.
+dist/test-files/ contains 20 synthetic JSON scenarios and scenarios.zip. Select one in **Data workspace → Scenario library** and click **Load case**, or upload its JSON file. Scenarios cover shared material controls, different causes of the same defect, incomplete inspections, delayed complaints, capacity bottlenecks, cost tradeoffs, weak corrective actions, and missing closure evidence. **Load multi-factory demonstration** opens an additional illustrative case with 54 batches, 58 inspection records and four factories.
 
 ## Workflows
 
@@ -39,19 +41,31 @@ dist/test-files/ contains 20 synthetic JSON scenarios and scenarios.zip. Select 
 - Filter the dashboard by factory and exposure classification.
 - Add inspections and review customer complaint records.
 - Compare defect patterns by machine, material lot, line, thread, shift, and team; record an evidence-backed cause and reviewer.
-- Adjust inspection and rework capacity; compare five estimated recovery options when confirmed and related stock quantities are complete. A split shipment shows both the priority release and full completion dates; one inspector is assigned per station.
+- Adjust inspection and rework capacity; compare seven recovery strategies when confirmed and related stock quantities are complete. Edit approval/material lead times, working calendars, reinspection/packing rates, machine/skill availability, costs and inspection-risk assumptions. View sequential stage timelines, full/priority completion, delay, uninspected related units and units before cut-off.
 - Enter prevention, appraisal, internal failure, external failure, recurrence, and reduction assumptions; review COPQ and expected prevention return.
 - Maintain containment, CAPA ownership, approval, evidence, and 30/60/90-day verification. Record a corrective action completion date, a separate date and evidence reference for each later check, and post-action inspection evidence. Closure is blocked until required gates pass and the observed defect rate improves without a recorded negative effect.
 - Download an HTML report or CSV export calculated from the active file and selected defect focus, including exposure, inspections, cost categories, recovery alternatives, verification checks, CAPA actions, and audit events.
+- Review statistical control limits, process concentration, severity weighting, factory/style comparisons and an explainable signal register.
+- Record hypotheses, fishbone categories and Five Whys; classify customer feedback with reviewer/evidence; maintain containment commitments.
+- Assign RACI roles and acyclic action dependencies. Record named approval evidence and an independent effectiveness reviewer before closure.
+- Compare recurrence sensitivity, break-even probability and payback from explicit incident frequency. Attribute cost entries to orders, defects, factories and suppliers.
+- Attach PNG/JPEG/WebP/PDF evidence locally, export analytical JSON, or transfer the complete workspace between browsers using a JSON snapshot.
 
 ## Validation
 
     node scripts/validate-data.mjs
     node scripts/validate-scenarios.mjs
     node scripts/validate-local.mjs
+    node scripts/validate-intelligence.mjs
 
 The local validation covers all 20 scenarios plus unseen JSON, flat CSV, and multiple related CSV tables. The browser workflow was also checked with the included independent CSV and XLSX examples.
 
 ## Operational limits
 
-This is a single-browser local analysis tool. It does not synchronize users, authenticate approvals, store binary evidence, integrate ERP/inspection systems, or optimize a minute-by-minute factory schedule. The recovery model uses stated capacity and cost assumptions. Uploaded files are limited to 20 MB total. Use a database, access control, durable evidence store, and integration services for a multi-user production deployment.
+This is a browser-local decision-support application. It does not synchronize users, authenticate approvals, integrate ERP/inspection systems, or optimize a minute-by-minute factory dispatch schedule. The recovery model uses explicit capacity and cost assumptions. Tabular input files are limited to 20 MB combined and JSON snapshots to 50 MB; evidence attachments are limited to 2 MB each and 20 MB combined. Local records and audit history are mutable. A multi-user enterprise deployment requires authenticated access, server-side workflow enforcement, a database, durable evidence retention, backups and operational integrations. See [TRANSFORMATION.md](TRANSFORMATION.md) for the complete requirements and assurance matrix.
+
+## Development and deployment
+
+The runtime is buildless HTML, CSS and ES modules in `dist/`, with a bundled Excel parser and no external chart or font requests. The Python server is a loopback-only static server. Node is required only for development validation and synthetic-data generation.
+
+On a push to `main`, `.github/workflows/pages.yml` runs the validation suites and publishes `dist/` to GitHub Pages. Localhost and the hosted site maintain separate browser storage. No production data are stored in the repository; the included datasets are synthetic.

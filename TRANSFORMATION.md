@@ -131,6 +131,14 @@ The model does not solve a mixed-integer program, reserve actual factory resourc
 
 ## Reports
 
+### Visual output expansion
+
+The Visual library adds 38 chart specifications in `dist/visualizations.js`. Ten operational workspaces also display their relevant charts. SVG renderers provide horizontal comparisons, Wilson interval comparisons, daily time series, stacked exposure bars, grouped risk bars, cumulative cost bridges and cost/time or investment/reduction scatter plots. Scatter points are numbered with evidence-table keys, which are also included in standalone SVG files.
+
+Every chart declares its own scope, units, source, date and interpretation limits. Inspection comparisons follow the selected defect; cost and action charts retain their stated dataset/incident scope. Library workspace and text filters persist on reload for the same active source. Missing quantities are omitted or shown as unavailable, never filled with example values. Complaint counts are not labeled complaint rates, repeated inspection observations are not unique garments, overlapping error-risk categories are not stacked, and aggregate cost is not allocated to suppliers without ledger evidence.
+
+Each visual supports SVG and CSV export, and the library exports a self-contained HTML visual report. The standard HTML report includes the same 38-chart collection. `validate-visuals.mjs` checks independent aggregates, interval bounds, missing-data behavior, safe exports, filtered output and renderability across all 20 cases plus the extended demonstration. This suite is included in the deployment gate.
+
 HTML reports are printable and include exposure, inspection evidence, cost categories, recovery choices, verification, CAPA and audit history. The intelligence appendix adds signals, planning assumptions, recurrence sensitivity, containment, hypotheses, Five Whys and RACI/governance checks. Screening results are labeled as screening.
 
 CSV remains a flat section/ID/field/value export. New nested intelligence sections are JSON-encoded in a cell. Spreadsheet formula prefixes are escaped. Analytical JSON provides machine-readable calculations and assumptions. Workspace JSON preserves normalized records and edits, including local evidence attachments, for re-import. Exported artifacts reflect the selected defect/reference analysis. Aggregate costs and case-level actions remain explicitly dataset/incident-wide.

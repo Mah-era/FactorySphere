@@ -51,12 +51,21 @@ dist/test-files/ contains 20 synthetic JSON scenarios and scenarios.zip. Select 
 - Compare recurrence sensitivity, break-even probability and payback from explicit incident frequency. Attribute cost entries to orders, defects, factories and suppliers.
 - Attach PNG/JPEG/WebP/PDF evidence locally, export analytical JSON, or transfer the complete workspace between browsers using a JSON snapshot.
 
-## Validation
+## Visual outputs
+
+The **Visual library** adds 38 data-driven charts to the existing dashboard visuals. Filter by workspace or search chart titles and explanations. Each chart provides source/date, units, assumptions, exact values on hover, an expandable evidence table, standalone SVG download and chart CSV download. Charts also appear in their relevant operational workspaces.
+
+Coverage includes factory/line/stage/team rates with confidence intervals, inspection volumes, severity burden, stock/shipment exposure, machine/material/shift comparisons, complaints, containment, recovery cost-time trade-offs and cost bridges, inspection risk, release quantities, attributable COPQ, intervention comparisons, CAPA workload/deadlines/evidence, matched effectiveness and data completeness. Missing inputs produce explicit unavailable states.
+
+Use **Download visual report** for a self-contained HTML collection of all 38 charts, suitable for browser printing to PDF. **Export report** also includes the charts alongside the detailed decision report. Gallery scope and source are stated on every output; chart CSV retains full numerical precision.
+
+## Validation commands
 
     node scripts/validate-data.mjs
     node scripts/validate-scenarios.mjs
     node scripts/validate-local.mjs
     node scripts/validate-intelligence.mjs
+    node scripts/validate-visuals.mjs
 
 The local validation covers all 20 scenarios plus unseen JSON, flat CSV, and multiple related CSV tables. The browser workflow was also checked with the included independent CSV and XLSX examples.
 

@@ -5,6 +5,10 @@ import {loadDataset,saveDataset} from './local-store.js';
 import {scheduleRecovery,governanceGates,actionBlockers,planningInputs,comparableEffect} from './intelligence.js';
 import {shellPage,overviewPage,intelligencePanels,dataPage,customersPage,containmentPage} from './presentation.js';
 import {handleWorkspaceForm,analyticalReport} from './workspace-actions.js';
+import {visualSpecs,visualsForView,visualLibrary,visualReport,standaloneSvg,chartCsv,VISUAL_CSS} from './visualizations.js';
+
+let visualCategory='All',visualQuery='';
+const visualStyle=document.createElement('style');visualStyle.textContent=VISUAL_CSS;document.head.append(visualStyle);
 
 const KEY='garment-quality-local-v2';
 const $=s=>document.querySelector(s);
@@ -162,7 +166,7 @@ function downloadReport(type){
   const summary=[['Source',r.source],['Scenario',r.scenario],['Defect focus',r.focus],['Reference batch',r.reference],['Confirmed batches',r.confirmed.join(', ')||'None'],['Precautionary batches',r.precautionary.join(', ')||'None'],['Confirmed stock',fmt(r.confirmedStock)],['Confirmed shipped',fmt(r.confirmedShipped)],['Defect rate',pct(r.focusDefectRate)],['Known quality cost',money(r.costKnown)],['Cost coverage',r.costCoverage+'/4'],['Effectiveness decision',r.effectivenessDecision],['Implementation date',r.implementationDate||'Unavailable'],['Observed post-action rate',pct(r.postRate)],['Shipment cut-off',r.cutoff||'Unavailable'],['Selected recovery',r.recovery?.name||'Unavailable'],['Recovery completion',r.recovery?.complete||'Unavailable'],['Estimated delay',r.recovery?.delay==null?'Unavailable':r.recovery.delay+' days']];
   summary.push(['Total quality cost per acceptable garment',money2(r.costPerAccepted)],['Expected failure loss',money(r.expectedFailureLoss)],['Expected avoided loss',money(r.expectedAvoidedLoss)],['Prevention ROI',pct(r.preventionRoi)]);
   let doc='<!doctype html><html><head><meta charset="utf-8"><title>FactorySphere decision report</title><style>body{font:14px Arial,sans-serif;color:#20333d;max-width:1100px;margin:36px auto;padding:0 20px}h1{font-size:28px}h2{margin-top:32px}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #dce5e7;padding:9px;text-align:left;vertical-align:top}th{background:#eff5f4}small{color:#617580}p{line-height:1.5}@media print{body{margin:0}}</style></head><body><h1>FactorySphere · Quality decision report</h1><small>Generated '+esc(r.generated)+' · Local file analysis</small><h2>Outcome</h2><table>'+summary.map(x=>'<tr><th>'+esc(x[0])+'</th><td>'+esc(x[1])+'</td></tr>').join('')+'</table><h2>Exposure and rationale</h2><table><tr><th>Batch</th><th>Scope</th><th>Stock</th><th>Shipped</th><th>Reason</th></tr>'+r.exposure.map(b=>'<tr><td>'+esc(b.batch)+'</td><td>'+esc(b.scope)+'</td><td>'+fmt(b.inventory)+'</td><td>'+fmt(b.shipped)+'</td><td>'+esc(b.reason)+'</td></tr>').join('')+'</table><h2>Inspection evidence</h2><table><tr><th>ID</th><th>Batch</th><th>Stage</th><th>Defect</th><th>Sample</th><th>Defects</th><th>Result</th></tr>'+r.inspections.map(i=>'<tr>'+[i.id,i.batch,i.stage,i.type,fmt(i.sample),fmt(i.defects),i.disposition].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table><h2>CAPA actions</h2><table><tr><th>Action</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>'+r.actions.map(x=>'<tr>'+[x.title,x.owner,x.status,x.evidence||'Missing'].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table><h2>Cost categories</h2><table><tr><th>Category</th><th>Amount</th></tr>'+r.costCategories.map(x=>'<tr><td>'+esc(x.category)+'</td><td>'+esc(money(x.amount))+'</td></tr>').join('')+'</table><h2>Recovery alternatives</h2><table><tr><th>Option</th><th>Inspect</th><th>Rework</th><th>Full completion</th><th>First release</th><th>Delay</th><th>Cost</th></tr>'+r.recoveryAlternatives.map(x=>'<tr>'+[x.name,fmt(x.inspectUnits),fmt(x.reworkUnits),x.complete,x.firstRelease||'—',x.delay==null?'—':x.delay+' days',money(x.cost)].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table><h2>Verification checks</h2><table><tr><th>Period</th><th>Due</th><th>Checked</th><th>Evidence</th><th>Valid</th></tr>'+r.verificationChecks.map(x=>'<tr>'+[x.period,x.due||'—',x.date||'—',x.evidence||'—',x.valid?'Yes':'No'].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table><h2>Audit trail</h2><table><tr><th>When</th><th>Event</th><th>Actor</th></tr>'+r.audit.map(x=>'<tr>'+[x.date,x.event,x.actor].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table><h2>Data limits</h2><p>'+esc(r.warnings.join(' ')||'No normalization warnings.')+'</p></body></html>';
-  doc=doc.replace('</body>',analyticalReport(db,a,options,true)+'</body>');
+  doc=doc.replace('</body>',analyticalReport(db,a,options,true)+visualReport(db,a,options,selectedRecovery,true)+'</body>');
   downloadFile(stem+'.html',doc,'text/html;charset=utf-8');
 }
 function render(){
@@ -170,12 +174,14 @@ function render(){
   const pages={overview:()=>overviewPage(db,a,options,{focusDefect,referenceBatch,factoryFilter,scopeFilter,selectedRecovery,selectedBatch}),trace:()=>trace(a),quality:()=>quality(a),investigate:()=>investigation(a),recovery:()=>recovery(a,options),cost:()=>cost(a),capa:()=>capa(a),learning:()=>learning(a)};
   const state={focusDefect,referenceBatch,factoryFilter,scopeFilter,selectedRecovery,selectedBatch};
   let page=view==='overview'?overviewPage(db,a,options,state):view==='data'?dataPage(db,a,manifest,selectedFixture):view==='customers'?customersPage(db):view==='containment'?containmentPage(db,a,options):(pages[view]||pages.overview)();
-  if(!['overview','data','customers','containment'].includes(view)){const extension=intelligencePanels(view,db,a,options,state);page=page.replace(focusBar(a),'');const end=page.indexOf('</div></div>')+12;page=view==='recovery'?page.slice(0,end)+focusBar(a)+page.slice(end)+extension:page.slice(0,end)+focusBar(a)+extension+page.slice(end)}
+  if(!['overview','visuals','data','customers','containment'].includes(view)){const extension=intelligencePanels(view,db,a,options,state);page=page.replace(focusBar(a),'');const end=page.indexOf('</div></div>')+12;page=view==='recovery'?page.slice(0,end)+focusBar(a)+page.slice(end)+extension:page.slice(0,end)+focusBar(a)+extension+page.slice(end)}
+  if(view==='visuals')page=visualLibrary(db,a,options,selectedRecovery,visualCategory,visualQuery);
+  else page+=visualsForView(view,db,a,options,selectedRecovery);
   shell(loadBanner()+page);saveIndicator(storageWarning?'Not saved':pendingWrites?'Saving…':'Saved locally');
-  try{sessionStorage.setItem(KEY+'-view',JSON.stringify({source:db.sourceName,loadedAt:db.loadedAt,view,focusDefect,referenceBatch,factoryFilter,scopeFilter,stageFilter,selectedBatch,selectedRecovery}))}catch{}
+  try{sessionStorage.setItem(KEY+'-view',JSON.stringify({source:db.sourceName,loadedAt:db.loadedAt,view,focusDefect,referenceBatch,factoryFilter,scopeFilter,stageFilter,selectedBatch,selectedRecovery,visualCategory,visualQuery}))}catch{}
   if(notification){notice(notification);notification=''}
 }
-function resetViews(){window.scrollTo(0,0);history.replaceState(null,'','#overview');focusDefect='Auto';referenceBatch='Auto';selectedBatch=db.batches[0]?.id;scopeFilter='All';factoryFilter='All';stageFilter='All';selectedRecovery=db.incident.selectedScenario||'Inspect all related stock + targeted rework';view='overview'}
+function resetViews(){window.scrollTo(0,0);history.replaceState(null,'','#overview');focusDefect='Auto';referenceBatch='Auto';selectedBatch=db.batches[0]?.id;scopeFilter='All';factoryFilter='All';stageFilter='All';visualCategory='All';visualQuery='';selectedRecovery=db.incident.selectedScenario||'Inspect all related stock + targeted rework';view='overview'}
 async function syncFromOtherTab(){
   if(loadState?.kind==='loading')return;
   const saved=await latestSaved();
@@ -222,6 +228,8 @@ async function importFiles(files){
   }
 }
 document.addEventListener('click',async e=>{
+  const chartButton=e.target.closest('[data-chart-svg],[data-chart-csv]');
+  if(chartButton){const a=model(),spec=visualSpecs(db,a,plansFor(a),selectedRecovery).find(s=>s.id===(chartButton.dataset.chartSvg||chartButton.dataset.chartCsv));if(spec){const svg=!!chartButton.dataset.chartSvg;downloadFile('factorysphere-'+spec.id+(svg?'.svg':'.csv'),svg?standaloneSvg(spec):'\ufeff'+chartCsv(spec),svg?'image/svg+xml':'text/csv;charset=utf-8')}return}
   if(e.target.closest('#menu')){const open=$('#sidebar').classList.toggle('open');$('#menu').setAttribute('aria-expanded',String(open));$('#menu').setAttribute('aria-label',open?'Close menu':'Open menu');return}
   if(e.target.closest('#close-menu')){$('#sidebar').classList.remove('open');$('#menu').setAttribute('aria-expanded','false');$('#menu').setAttribute('aria-label','Open menu');return}
   const batch=e.target.closest('[data-batch]');if(batch)selectedBatch=batch.dataset.batch;
@@ -239,6 +247,7 @@ document.addEventListener('click',async e=>{
     else if(action==='report-json'){downloadFile('factorysphere-analysis-'+today()+'.json',JSON.stringify(analyticalReport(db,model(),plansFor(model())),null,2),'application/json')}
     else if(action==='upload'){let input=$('#file-input');if(!input){input=document.createElement('input');input.id='file-input';input.type='file';input.accept='.json,.csv,.tsv,.xlsx,.xls';input.multiple=true;input.hidden=true;document.body.append(input)}input.click()}
     else if(action==='report-html')downloadReport('html');
+    else if(action==='visual-report'){const a=model();downloadFile('factorysphere-visual-report-'+today()+'.html',visualReport(db,a,plansFor(a),selectedRecovery),'text/html;charset=utf-8')}
     else if(action==='report-csv')downloadReport('csv');
     else if(action==='enterprise-demo'){selectedFixture='enterprise-demonstration.json';await loadFixture()}
     else if(action==='load-fixture')await loadFixture();
@@ -248,7 +257,13 @@ document.addEventListener('click',async e=>{
     else if(action==='reopen'){db.incident.closed=false;db.incident.stage='Reopened';audit('Case reopened');render()}
   }catch(err){notice(err.message)}
 });
+document.addEventListener('input',e=>{
+  if(e.target.id!=='visual-search')return;
+  visualQuery=e.target.value;const caret=e.target.selectionStart;render();
+  const search=$('#visual-search');search.focus();search.setSelectionRange(caret,caret);
+});
 document.addEventListener('change',async e=>{
+  if(e.target.id==='visual-category'){visualCategory=e.target.value;render();return}
   if(e.target.id==='evidence-input'&&e.target.files.length){const input=e.target,file=input.files[0],sourceRevision=db.revision,sourceLoadedAt=db.loadedAt;try{if(!['image/png','image/jpeg','image/webp','application/pdf'].includes(file.type)||file.size>2*1024*1024)throw new Error('Use PNG, JPEG, WebP or PDF up to 2 MB.');const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Evidence file could not be read.'));reader.readAsDataURL(file)});if(db.revision!==sourceRevision||db.loadedAt!==sourceLoadedAt)throw new Error('The active data changed during upload. Attach the evidence again.');const records=db.workspace.evidenceFiles||[];if(records.reduce((n,r)=>n+(r.size||r.dataUrl.length*.75),0)+file.size>20*1024*1024)throw new Error('Combined evidence exceeds 20 MB.');const id='EV-'+Date.now();records.push({id,recordId:input.dataset.recordId,reviewer:input.dataset.reviewer,name:file.name,type:file.type,size:file.size,dataUrl});db.workspace.evidenceFiles=records;audit('Evidence '+id+' attached to '+input.dataset.recordId);render();notice('Evidence attached. Reference '+id+' in your review.')}catch(err){notice(err.message)}finally{input.remove()}return}
 
   if(e.target.id==='file-input'&&e.target.files.length){try{await importFiles(e.target.files)}catch(err){notice(err.message)}finally{if(e.target.isConnected)e.target.value=''}}
@@ -275,10 +290,10 @@ async function boot(){
   const saved=await latestSaved();
   if(saved){try{db=normalizeDataset(saved,saved.sourceName||'Stored file')}catch{storageWarning='Saved data could not be read; the built-in example is displayed.'}}
   selectedBatch=db.batches[0]?.id;
-  const requestedView=location.hash.slice(1);if(['overview','trace','quality','investigate','recovery','cost','capa','learning','data','customers','containment'].includes(requestedView))view=requestedView;
+  const requestedView=location.hash.slice(1);if(['overview','visuals','trace','quality','investigate','recovery','cost','capa','learning','data','customers','containment'].includes(requestedView))view=requestedView;
   selectedFixture=/^\d{2}-.*\.json$/.test(db.sourceName)?db.sourceName:'';
   selectedRecovery=db.incident.selectedScenario||'Inspect all related stock + targeted rework';
-  try{const state=JSON.parse(sessionStorage.getItem(KEY+'-view'));if(state?.source===db.sourceName&&state.loadedAt===db.loadedAt){focusDefect=state.focusDefect||'Auto';referenceBatch=state.referenceBatch||'Auto';factoryFilter=state.factoryFilter||'All';scopeFilter=state.scopeFilter||'All';stageFilter=state.stageFilter||'All';selectedBatch=state.selectedBatch||selectedBatch}}catch{}
+  try{const state=JSON.parse(sessionStorage.getItem(KEY+'-view'));if(state?.source===db.sourceName&&state.loadedAt===db.loadedAt){focusDefect=state.focusDefect||'Auto';referenceBatch=state.referenceBatch||'Auto';factoryFilter=state.factoryFilter||'All';scopeFilter=state.scopeFilter||'All';stageFilter=state.stageFilter||'All';visualCategory=state.visualCategory||'All';visualQuery=state.visualQuery||'';selectedBatch=state.selectedBatch||selectedBatch}}catch{}
   render();
   try{
     const response=await fetch('./test-files/index.json',{cache:'no-store'});
@@ -293,7 +308,7 @@ async function boot(){
 }
 if(channel)channel.onmessage=e=>{if(e.data?.type==='dataset-updated')syncFromOtherTab()};
 else window.addEventListener('storage',e=>{if(e.key===KEY)syncFromOtherTab()});
-window.addEventListener('hashchange',()=>{const next=location.hash.slice(1);if(['overview','trace','quality','investigate','recovery','cost','capa','learning','data','customers','containment'].includes(next)){view=next;render();window.scrollTo(0,0)}});
+window.addEventListener('hashchange',()=>{const next=location.hash.slice(1);if(['overview','visuals','trace','quality','investigate','recovery','cost','capa','learning','data','customers','containment'].includes(next)){view=next;render();window.scrollTo(0,0)}});
 boot();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkBuild()});
 window.addEventListener('focus',checkBuild);

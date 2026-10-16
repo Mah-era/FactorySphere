@@ -20,6 +20,9 @@ function parseDelimited(text,delimiter){
 }
 function classify(name,rows){
   const n=normalized(name),h=new Set(Object.keys(rows[0]||{}).map(normalized));
+  // A complete inspection signature is stronger than an incidental filename
+  // such as factory-review.csv, material-check.csv or customer-returns.csv.
+  if(['sample','inspected','inspectionquantity','samplesize','sampledunits'].some(k=>h.has(k))&&['defects','defective','defectivequantity','defectqty','defectcount'].some(k=>h.has(k)))return 'inspections';
   if(n.includes('inspection'))return 'inspections';
   if(n.includes('complaint')||n.includes('return'))return 'complaints';
   if(n.includes('shipment')||n.includes('shipping'))return 'shipments';
@@ -32,7 +35,6 @@ function classify(name,rows){
   if(n.includes('factory'))return 'factories';
   if(n.includes('material')||n.includes('fabric')||n.includes('thread'))return 'materials';
   if(n.includes('batch')||n.includes('production'))return 'batches';
-  if((h.has('sample')||h.has('inspected')||h.has('inspectionquantity')||h.has('samplesize'))&&(h.has('defects')||h.has('defective')||h.has('defectivequantity')||h.has('defectqty')))return 'inspections';
   if(h.has('batch')||h.has('batchid'))return 'batches';
   throw new Error(`Could not identify ${name}. Use a recognizable sheet/file name or inspection sample and defects columns.`);
 }

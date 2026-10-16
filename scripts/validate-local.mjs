@@ -5,6 +5,13 @@ import {normalizeDataset,deriveAnalysis,recoveryOptions,deriveCost,deriveEffecti
 import {readDataFiles} from '../dist/file-ingest.js';
 
 const base=normalizeDataset(seed,'seed');
+const renamedCsv=readFileSync(new URL('../examples/unseen-inspections.csv',import.meta.url),'utf8');
+for(const name of ['factory-review.csv','material-review.csv','customer-returns.csv','production-data.csv']){
+  const parsed=await readDataFiles([{name,size:renamedCsv.length,text:async()=>renamedCsv}]);
+  assert.equal(parsed.inspections.length,3);assert.equal(deriveAnalysis(parsed).focusDefects,17);
+}
+const malformedCsv='batch_id,defect_type,sample_size,defective_quantity\nINVALID,Invalid,-10,2\n';
+await assert.rejects(readDataFiles([{name:'factorysphere-invalid-audit.csv',size:malformedCsv.length,text:async()=>malformedCsv}]),/sample|quantity|positive/i);
 const baseline=deriveAnalysis(base);
 assert.deepEqual(baseline.confirmed.map(b=>b.id).sort(),['B-1038','B-1042','B-1044']);
 assert.deepEqual(baseline.precautionary.map(b=>b.id),['B-1043']);

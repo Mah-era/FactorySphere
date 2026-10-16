@@ -1,0 +1,148 @@
+{
+  "scenario": {
+    "title": "Independent live upload audit (synthetic)"
+  },
+  "batches": [
+    {
+      "id": "AUD-RED",
+      "sku": "AUD-SHIRT",
+      "factory": "AUD-FACTORY",
+      "line": "AUD-L1",
+      "machine": "AUD-M1",
+      "fabric": "AUD-FAB",
+      "thread": "AUD-THREAD",
+      "team": "AUD-TEAM",
+      "shift": "Day",
+      "units": 1100,
+      "inventory": 1000,
+      "shipped": 100,
+      "location": "Audit warehouse",
+      "order": "AUD-ORDER"
+    },
+    {
+      "id": "AUD-GREEN",
+      "sku": "AUD-SHIRT",
+      "factory": "AUD-FACTORY",
+      "line": "AUD-L2",
+      "machine": "AUD-M2",
+      "fabric": "AUD-FAB",
+      "units": 500,
+      "inventory": 500,
+      "shipped": 0,
+      "order": "AUD-ORDER"
+    }
+  ],
+  "inspections": [
+    {
+      "id": "AUD-I1",
+      "batch": "AUD-RED",
+      "type": "Audit seam defect",
+      "stage": "Final",
+      "date": "2026-10-10",
+      "sample": 100,
+      "defects": 20,
+      "threshold": 2.5,
+      "disposition": "Fail",
+      "evidence": "Synthetic audit observation A"
+    },
+    {
+      "id": "AUD-I2",
+      "batch": "AUD-GREEN",
+      "type": "Audit seam defect",
+      "stage": "Final",
+      "date": "2026-10-11",
+      "sample": 100,
+      "defects": 0,
+      "threshold": 2.5,
+      "disposition": "Pass",
+      "evidence": "Synthetic audit observation B"
+    }
+  ],
+  "orders": [
+    {
+      "id": "AUD-ORDER",
+      "sku": "AUD-SHIRT",
+      "units": 1600,
+      "due": "2026-11-30",
+      "customer": "Audit customer"
+    }
+  ],
+  "shipments": [
+    {
+      "id": "AUD-S1",
+      "batch": "AUD-RED",
+      "units": 100,
+      "date": "2026-10-12",
+      "destination": "Audit market",
+      "status": "Delivered",
+      "cutoff": "2026-11-30"
+    }
+  ],
+  "complaints": [
+    {
+      "id": "AUD-C1",
+      "batch": "AUD-RED",
+      "category": "Audit seam defect",
+      "text": "Synthetic seam complaint for audit",
+      "date": "2026-10-13",
+      "customer": "Audit customer",
+      "cost": 25,
+      "decision": "Pending review"
+    }
+  ],
+  "costInputs": {
+    "prevention": 100,
+    "appraisal": 200,
+    "internal": 300,
+    "external": 400,
+    "recurrence": 50,
+    "reduction": 50
+  },
+  "recoveryInputs": {
+    "inspectors": 2,
+    "stations": 1,
+    "inspectRate": 50,
+    "reworkLines": 1,
+    "reworkRate": 100
+  },
+  "actions": [
+    {
+      "id": "AUD-A1",
+      "title": "Audit open task",
+      "owner": "Audit owner",
+      "type": "Corrective",
+      "due": "2026-10-01",
+      "status": "Open",
+      "required": true
+    },
+    {
+      "id": "AUD-A2",
+      "title": "Audit complete task",
+      "owner": "Audit owner",
+      "type": "Containment",
+      "status": "Done",
+      "completedAt": "2026-10-12",
+      "evidence": "Synthetic audit hold record",
+      "required": true
+    }
+  ],
+  "incident": {
+    "id": "AUD-INCIDENT",
+    "leader": "Audit lead",
+    "defectType": "Audit seam defect",
+    "referenceBatch": "AUD-RED"
+  },
+  "workspace": {
+    "economics": {
+      "incidentsPerYear": 4
+    }
+  },
+  "groundTruth": {
+    "confirmed": [
+      "AUD-RED"
+    ],
+    "precautionary": [
+      "AUD-GREEN"
+    ]
+  }
+}

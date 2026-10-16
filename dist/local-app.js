@@ -1,3 +1,4 @@
+import {validateDecisionState} from './decision-validation.js';
 import {seed} from './data.js';
 import {normalizeDataset,deriveAnalysis,recoveryOptions,deriveCost,deriveEffectiveness,quantity} from './analysis-core.js';
 import {readDataFiles,downloadFile} from './file-ingest.js';
@@ -140,7 +141,8 @@ function learning(a){
   html+=card('Case lessons','Keep failed assumptions and revised practices visible','<div class="mini-list">'+db.lessons.map(l=>'<div class="mini-item"><div class="mini-icon">✦</div><div><strong>'+esc(l.title)+'</strong><p>'+esc(l.text)+'</p></div></div>').join('')+'</div><form id="lesson-form" class="form-grid"><div class="field"><label>Lesson title</label><input name="title" required></div><div class="field full"><label>What changed or failed?</label><textarea name="text" required></textarea></div><button class="btn primary" type="submit">Save lesson</button></form>');
   return html;
 }
-function audit(event){if(db.incident.closed&&event!=='Case closed'&&event!=='Case reopened'){db.incident.closed=false;db.incident.stage='Reopened';db.audit.push({event:'Case reopened after evidence or decision changed',date:new Date().toISOString(),actor:'Local user'})}db.audit.push({event,date:new Date().toISOString(),actor:'Local user'});save()}
+let formTransaction=false,formDirty=false;
+function audit(event){if(formTransaction){validateDecisionState(db,{defect:focusDefect,referenceBatch});formDirty=true;}if(db.incident.closed&&event!=='Case closed'&&event!=='Case reopened'){db.incident.closed=false;db.incident.stage='Reopened';db.audit.push({event:'Case reopened after evidence or decision changed',date:new Date().toISOString(),actor:'Local user'})}db.audit.push({event,date:new Date().toISOString(),actor:'Local user'});if(!formTransaction)save()}
 function invalidateGroundTruth(){if(db.groundTruth){db.groundTruth=null;db.groundTruthCleared=true;db.warnings.push('Known-answer validation was cleared after local evidence changed.')}}
 function csvCell(v){const raw=String(v??''),safe=typeof v==='string'&&/^[\s]*[=+\-@]/.test(raw)?"'"+raw:raw;return '"'+safe.replace(/"/g,'""')+'"'}
 function reportData(a,options){
@@ -187,7 +189,7 @@ async function syncFromOtherTab(){
   const saved=await latestSaved();
   if(!saved)return;
   if(revisionOf(saved)<=revisionOf(db))return;
-  try{db=normalizeDataset(saved,saved.sourceName||'Stored file')}catch{return}
+  try{db=validateDecisionState({...saved,sourceName:saved.sourceName||'Stored file'})}catch{return}
   loadToken++;
   selectedFixture=/^\d{2}-.*\.json$/.test(db.sourceName)?db.sourceName:'';
   resetViews();loadState=null;notification='Updated from another local tab';render();
@@ -201,7 +203,7 @@ async function loadFixture(){
     const response=await fetch('./test-files/'+encodeURIComponent(file),{cache:'no-store'});
     if(!response.ok)throw new Error('HTTP '+response.status);
     const next=normalizeDataset(await response.json(),file);
-    scheduleRecovery(next,deriveAnalysis(next),recoveryOptions(next,deriveAnalysis(next)));
+    validateDecisionState(next);
     if(token!==loadToken)return;
     next.sourceName=file;next.loadedAt=new Date().toISOString();
     db=next;await save();resetViews();loadState=null;notification='Loaded '+(db.scenario?.title||file);render();
@@ -217,7 +219,7 @@ async function importFiles(files){
   loadState={kind:'loading',title:'Analyzing '+names,message:'The current results remain visible until the upload passes validation.'};render();
   try{
     const next=await readDataFiles(files);
-    scheduleRecovery(next,deriveAnalysis(next),recoveryOptions(next,deriveAnalysis(next)));
+    validateDecisionState(next);
     if(token!==loadToken)return;
     next.sourceName=names;next.loadedAt=new Date().toISOString();
     db=next;selectedFixture='';await save();resetViews();loadState=null;notification='Analyzed '+db.sourceName;render();
@@ -275,8 +277,8 @@ document.addEventListener('change',async e=>{
   if(e.target.id==='stage-filter'){stageFilter=e.target.value;render()}
   if(e.target.id==='fixture-select'){selectedFixture=e.target.value;render()}
 });
-document.addEventListener('submit',e=>{
-  const form=e.target;if(!form.id)return;e.preventDefault();try{if(handleWorkspaceForm(form,db,{audit,invalidateGroundTruth})){render();notice('Workspace updated');return}}catch(err){notice(err.message);return}const f=new FormData(form),v=k=>String(f.get(k)??'').trim();
+function submitForm(e){
+  const form=e.target;if(!form.id)return;e.preventDefault();if(handleWorkspaceForm(form,db,{audit,invalidateGroundTruth})){render();notice('Workspace updated');return}const f=new FormData(form),v=k=>String(f.get(k)??'').trim();
   if(form.id==='inspection-form'){const sample=Number(v('sample')),defects=Number(v('defects'));if(defects>sample){notice('Defects cannot exceed inspected units.');return}const threshold=Number(v('threshold'));invalidateGroundTruth();db.inspections.push({id:'INS-LOCAL-'+Date.now(),batch:v('batch'),stage:v('stage'),type:v('type'),location:v('location'),date:today(),sample,defects,threshold,inspector:v('inspector'),evidence:v('evidence'),operation:'',severity:'Major',disposition:defects/sample*100>threshold?'Fail':'Pass',notes:''});audit('Inspection added');render();notice('Inspection added')}
   else if(form.id==='cause-form'){db.incident.cause=v('cause');db.incident.causeEvidence=v('causeEvidence');db.incident.causeReviewer=v('causeReviewer');db.incident.causeConfirmed=!!f.get('causeConfirmed')&&!!db.incident.cause&&!!db.incident.causeEvidence&&!!db.incident.causeReviewer;audit('Cause finding updated');render();notice(db.incident.causeConfirmed?'Cause confirmed with evidence':'Working hypothesis saved')}
   else if(form.id==='capacity-form'){const next=Object.fromEntries(Object.keys(db.recoveryInputs).map(k=>[k,Number(v(k))]));if(Object.values(next).some(x=>!Number.isFinite(x)||x<=0)||['inspectors','stations','reworkLines'].some(k=>!Number.isInteger(next[k]))){notice('Capacity must be positive; people, stations and lines must be whole numbers.');return}Object.assign(db.recoveryInputs,next);audit('Recovery capacity updated');render();notice('Recovery plan recalculated')}
@@ -285,10 +287,17 @@ document.addEventListener('submit',e=>{
   else if(form.id==='action-form'){db.actions.push({id:'ACT-LOCAL-'+Date.now(),title:v('title'),type:v('type'),owner:v('owner'),role:'',due:v('due'),status:'Open',completedAt:'',evidence:'',required:true});audit('CAPA action added');render();notice('Action added')}
   else if(form.id==='verify-form'){const effect=deriveEffectiveness(db,model(),today());for(const k of ['d30','d60','d90'])if(f.get(k)){const checkDate=v(k+'Date'),evidence=v(k+'Evidence'),due=effect.checks[k].due;if(!due||!checkDate||!evidence||checkDate<due||checkDate>today()){notice(k.slice(1)+'-day check needs an eligible date and its own evidence reference.');return}}for(const k of ['d30','d60','d90']){db.incident.verification[k]=!!f.get(k);db.incident.verificationRecords[k]={date:v(k+'Date'),evidence:v(k+'Evidence')}}db.verificationEvidence=v('verificationEvidence');db.sideEffect=v('sideEffect');audit('Verification updated');render();notice('Verification saved')}
   else if(form.id==='lesson-form'){db.lessons.push({id:'LES-LOCAL-'+Date.now(),title:v('title'),text:v('text'),case:db.incident.id,date:today()});audit('Lesson added');render();notice('Lesson saved')}
+}
+document.addEventListener('submit',e=>{
+  if(!e.target.id)return;
+  const previous=db;db=structuredClone(previous);formTransaction=true;formDirty=false;
+  try{submitForm(e);if(formDirty)save();else db=previous}
+  catch(err){db=previous;notification='';render();notice('Changes were not saved. '+err.message)}
+  finally{formTransaction=false;formDirty=false}
 });
 async function boot(){
   const saved=await latestSaved();
-  if(saved){try{db=normalizeDataset(saved,saved.sourceName||'Stored file')}catch{storageWarning='Saved data could not be read; the built-in example is displayed.'}}
+  if(saved){try{db=validateDecisionState({...saved,sourceName:saved.sourceName||'Stored file'})}catch{storageWarning='Saved data could not be read; the built-in example is displayed.'}}
   selectedBatch=db.batches[0]?.id;
   const requestedView=location.hash.slice(1);if(['overview','visuals','trace','quality','investigate','recovery','cost','capa','learning','data','customers','containment'].includes(requestedView))view=requestedView;
   selectedFixture=/^\d{2}-.*\.json$/.test(db.sourceName)?db.sourceName:'';

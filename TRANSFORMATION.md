@@ -164,6 +164,12 @@ All four validation scripts pass. Independent CSV upload produced 3 batches, 300
 
 ## Production deployment work that remains
 
+### Live-site upload audit — 17 October 2026
+
+Exercised the public GitHub Pages app with the independent CSV, Excel workbook and `examples/live-audit.json`. CSV: 17/300 defective observations (5.7%); Excel: 11/200 (5.5%); complete audit case: 20/200 (10%), 1,000 confirmed stock units, 500 precautionary units and $1,000 initial recorded quality cost. Updating external failure cost from $400 to $800 recalculated total cost to $1,400 and strict COPQ to $1,100. The independently calculated first recovery plan required 8.625 workdays and $1,405, completing 29 October from a 17 October start. Downloaded HTML/JSON reports matched the active files and edited values, including all 38 chart sections. All workspaces were checked for previous-file identifiers and invalid numerical output.
+
+The audit exposed a defect: advanced planning inputs were saved before derived scheduling could reject an impossible horizon. This could leave stale results and break navigation. Form submissions now run against a cloned draft, validate normalized data and derived calculations, and save only after successful rendering. Failed edits restore the prior dataset. Imports, cross-tab synchronization and startup also validate derived state, including numeric overflow. Regression checks cover the impossible horizon and overflow cases.
+
 For a centrally managed enterprise deployment, introduce authenticated identities, server-side roles, durable relational storage, immutable evidence and audit retention, concurrency/conflict handling, backups, signed approvals, organizational calendars, actual capacity reservations, ERP/WMS/TMS links, monitored services and tested recovery procedures. Obtain factory-approved sampling plans and cost dictionaries. Calibrate alerts and delivery forecasts against actual outcomes before using them as automated gates.
 
 The static GitHub Pages delivery and foreground local server remain supported. No macOS LaunchAgent is installed or needed.

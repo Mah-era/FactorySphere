@@ -5,8 +5,19 @@ import {normalizeDataset,deriveAnalysis,recoveryOptions,deriveEffectiveness} fro
 import {interval,controlSeries,groupRates,scheduleRecovery,PLANNING_DEFAULTS,governanceGates,comparableEffect,costSensitivity,actionBlockers,operatingMetrics} from '../dist/intelligence.js';
 import {applyWorkspaceCommand,analyticalReport} from '../dist/workspace-actions.js';
 import {overviewPage,intelligencePanels,dataPage,customersPage,containmentPage} from '../dist/presentation.js';
+import {validateDecisionState} from '../dist/decision-validation.js';
 
 const ci=interval(10,100);
+const auditCase=normalizeDataset(JSON.parse(readFileSync(new URL('../examples/live-audit.json',import.meta.url))));
+const auditAnalysis=deriveAnalysis(auditCase),auditPlans=scheduleRecovery(auditCase,auditAnalysis,recoveryOptions(auditCase,auditAnalysis),'2026-10-17');
+assert.equal(auditAnalysis.focusDefects/auditAnalysis.focusSample*100,10);
+assert.equal(auditAnalysis.knownCost,1000);assert.equal(auditPlans[0].cost,1405);assert.equal(auditPlans[0].complete,'2026-10-29');
+const impossible=structuredClone(auditCase);impossible.workspace.planning={materialLeadDays:30000};
+assert.throws(()=>validateDecisionState(impossible),/100 years/);
+assert.equal(auditCase.workspace.planning?.materialLeadDays,undefined);
+const overflowing=structuredClone(auditCase);overflowing.costInputs.internal=1e308;overflowing.costInputs.external=1e308;
+assert.throws(()=>validateDecisionState(overflowing),/calculation range/);
+validateDecisionState(auditCase);
 assert(Math.abs(ci.low-5.5229)<.01);assert(Math.abs(ci.high-17.4367)<.01);
 assert.equal(interval(0,0),null);assert(interval(0,100).high>0);
 const p=controlSeries([{id:'a',date:'2026-01-01',sample:100,defects:10},{id:'b',date:'2026-01-02',sample:400,defects:40}]);

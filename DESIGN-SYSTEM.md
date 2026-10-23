@@ -6,6 +6,10 @@ Version 3, completed 23 October 2026, transforms the runtime across every operat
 
 This is a product design and decision-support upgrade. Authentication, a shared operational database and server-enforced approvals remain future architecture requirements; the design does not claim those capabilities exist.
 
+### Release status
+
+The current published build is commit `3caeef5`. GitHub Pages completed its deployment workflow successfully. Live verification uploaded the known-answer product-mix file, checked recalculation and reload persistence, then downloaded the decision report. The report contained the active source, raw and standardized comparison, shared-stratum evidence, recovery dominance results and the full signed prevention stress grid. No live console errors or warnings were observed.
+
 ## Foundations
 
 | Token | Value | Role |

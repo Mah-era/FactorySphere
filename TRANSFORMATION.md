@@ -10,6 +10,10 @@ The application runs entirely on the user's machine, either from a loopback Pyth
 
 The interface is intended for professional decision support. It is not a claim of certified enterprise deployment: authenticated access, server-enforced segregation of duties, immutable audit retention, multi-user concurrency, ERP integrations and central backups require a server and organizational controls. Local reviewer names are acknowledgements, not digital signatures.
 
+### Current release verification — 23 October 2026
+
+The release at commit `3caeef5` passed all six validation suites and deployed successfully through GitHub Pages. A live browser test uploaded `synthetic-product-mix.json`, recalculated the overview and Analysis studio, retained the active source after reload, and generated a decision report containing the active source, ranking reversal, comparison strata, recovery dominance table and 25-cell prevention stress test. The live browser reported no console errors or warnings. The local loopback health endpoint also returned `{ "ok": true, "service": "factorysphere-local" }`.
+
 ## What changed
 
 - Replaced the application shell with a coherent navigation hierarchy, persistent data context, global import/report controls, and a compact executive decision overview.

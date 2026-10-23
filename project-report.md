@@ -2,6 +2,8 @@
 
 > **23 October 2026 — Version 3 update:** The current application has 13 responsive workspaces and 50 exportable visualizations. [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) documents the complete product redesign, linked Analysis studio, new chart calculations, responsive interactions and verification evidence. [TRANSFORMATION.md](TRANSFORMATION.md) retains the implementation and assurance record, formulas and requirements coverage matrix. These addenda supersede older descriptions in this report. Central authentication, immutable audit retention and live factory integrations remain production deployment work.
 
+> **Release verification — 23 October 2026:** Commit `3caeef5` is deployed to GitHub Pages. The live site was tested with the supplemental product-mix file: dashboard values changed to 110 defective observations / 2,000 inspected observations, the source persisted after reload, and the decision report preserved the raw 8.2% vs 2.8% comparison plus the standardized 5% vs 6% reversal. All six automated suites passed; no browser console errors or warnings were observed.
+
 ## Comprehensive Project Report
 
 **Project type:** Local-first apparel quality management and decision-support web application  
@@ -1159,7 +1161,7 @@ Automated tests cover these boundary conditions. Browser checks confirmed indepe
 - There is no worker thread for very large parsing or analysis tasks.
 - IndexedDB schema migration is minimal because the application has a single store and current dataset.
 - Legacy modules from the earlier site build remain in `dist` even though the current entry point uses the local modules.
-- The current source tree has uncommitted modifications and generated assets, so a release baseline should be tagged after review.
+- The current release baseline is committed at `3caeef5`; generated assets are included deliberately because the build is a static, buildless deployment.
 
 ### 19.3 Recommended code evolution
 

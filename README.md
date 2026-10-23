@@ -4,6 +4,8 @@ FactorySphere is a local-first browser app for apparel quality traceability, ins
 
 Version 3 introduces a complete responsive product redesign, 13 connected workspaces, an interactive Analysis studio, 50 exportable visualizations, record search, evidence-linked investigation, seven recovery strategies, cost sensitivity and evidence-gated CAPA. [Implementation, formulas, requirements coverage and boundaries](TRANSFORMATION.md) and the [design system](DESIGN-SYSTEM.md) document the implementation.
 
+**Release verification — 23 October 2026:** GitHub Pages deployment completed successfully from commit `3caeef5`. A live upload of `synthetic-product-mix.json` recalculated the dashboard to 110 defective observations / 2,000 inspected observations, persisted through reload, exposed the 8.2% vs 2.8% raw comparison, and produced the expected 5% vs 6% common-mix reversal in the decision report. Browser console warnings and errors were absent.
+
 - Repository: https://github.com/mah-era/FactorySphere
 - Live demo: https://mah-era.github.io/FactorySphere/
 

@@ -34,6 +34,7 @@ jobs:
           node scripts/validate-local.mjs
           node scripts/validate-intelligence.mjs
           node scripts/validate-visuals.mjs
+          node scripts/validate-experience.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Version browser assets

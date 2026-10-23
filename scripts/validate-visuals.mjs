@@ -7,7 +7,7 @@ import {visualSpecs,standaloneSvg,chartCsv,visualReport,visualLibrary} from '../
 
 const db=normalizeDataset(seed),a=deriveAnalysis(db),plans=scheduleRecovery(db,a,recoveryOptions(db,a));
 const specs=visualSpecs(db,a,plans),get=id=>specs.find(s=>s.id===id);
-assert.equal(specs.length,38);assert.equal(new Set(specs.map(s=>s.id)).size,38);
+assert.equal(specs.length,50);assert.equal(new Set(specs.map(s=>s.id)).size,50);
 assert.equal(get('complaint-categories').rows.reduce((n,r)=>n+r.value,0),3);
 assert.equal(get('complaint-cost').rows.find(r=>r.label==='Northline Retail').value,1860);
 assert.equal(get('cost-waterfall').rows.reduce((n,r)=>n+r.value,0),14820);
@@ -31,6 +31,6 @@ for(const item of [...manifest,{file:'enterprise-demonstration.json'}]){
   for(const spec of visualSpecs(d,analysis,p)){
     const svg=standaloneSvg(spec);assert(!/NaN|Infinity|undefined/.test(svg),item.file+': '+spec.id);assert(svg.includes('xmlns="http://www.w3.org/2000/svg"'));assert(chartCsv(spec).includes('Source'));
   }
-  const report=visualReport(d,analysis,p);assert.equal((report.match(/data-visual-id=/g)||[]).length,38);assert(!report.includes('data-chart-svg='));
+  const report=visualReport(d,analysis,p);assert.equal((report.match(/data-visual-id=/g)||[]).length,50);assert(!report.includes('data-chart-svg='));
 }
-console.log('Passed 38 visual outputs: independent aggregates, interval bounds, missing-data behavior, filtered library, escaped SVG/CSV exports, and 20 scenarios + extended demonstration.');
+console.log('Passed 50 visual outputs: independent aggregates, interval bounds, missing-data behavior, filtered library, escaped SVG/CSV exports, and 20 scenarios + extended demonstration.');

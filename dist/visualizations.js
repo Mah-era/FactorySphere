@@ -1,5 +1,7 @@
 import {day,sum,groupRates,profileData,comparableEffect} from './intelligence.js';
 import {deriveEffectiveness} from './analysis-core.js';
+import {advancedSpecs} from './advanced-analytics.js';
+import {REPORT_THEME} from './report-theme.js';
 
 const escape=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=x=>Number.isFinite(x)?x.toLocaleString('en-US',{maximumFractionDigits:1}):'Unavailable';
@@ -59,13 +61,26 @@ export function visualSpecs(db,a,plans,selectedPlan){
   add('verification-progress','learning','Verification checkpoints','Each checkpoint is either verified with required timing/evidence or pending. Pending is not evidence of ineffective action.','bar',Object.entries(effect.checks).map(([key,v])=>({label:key.slice(1)+'-day · '+(v.due||'implementation pending'),value:v.valid?1:0})),'verified (1) / pending (0)');
   add('data-coverage','data','Decision-input completeness','Share of records with each decision input supplied. Zero-record groups are unavailable, not 0% complete.','bar',profileData(db).coverage.map(r=>({label:r.label,value:r.percent})),'% complete');
   add('data-records','data','Imported evidence inventory','Record counts by collection. Different collection types are not additive as unique physical entities.','bar',['batches','inspections','shipments','complaints','actions','rework','orders','materials'].map(k=>({label:k,value:db[k]?.length??0})),'records');
-  return specs.map(s=>({...s,source:db.sourceName,generated:day(),synthetic:!!db.groundTruth||db.sourceName==='enterprise-demonstration.json',rows:s.rows.filter(r=>s.kind==='scatter'?valid(r.x)&&valid(r.y):s.parts?s.parts.some(p=>valid(r[p])):valid(r.value))}));
+  return [...specs,...advancedSpecs(db,a,plans,selectedPlan)].map(s=>({...s,source:db.sourceName,generated:day(),synthetic:!!db.groundTruth||db.sourceName==='enterprise-demonstration.json',rows:s.rows.filter(r=>['scatter','curve'].includes(s.kind)?valid(r.x)&&valid(r.y):s.parts?s.parts.some(p=>valid(r[p])):valid(r.value))}));
 }
 
 function marks(s){
-  const rows=s.rows, height=['bar','interval','stack','multi','waterfall'].includes(s.kind)?Math.max(240,rows.length*(s.kind==='multi'?58:37)+75):310;
+  const rows=s.rows;let height=['bar','interval','stack','multi','waterfall','timeline','diverging'].includes(s.kind)?Math.max(240,rows.length*(s.kind==='multi'?58:37)+75):310;
   if(!rows.length)return {height:180,body:text(32,80,'Unavailable from the active data')+text(32,110,'Supply the required records or planning inputs to populate this chart.')};
   let body='';
+  if(s.kind==='heat'){
+    const rowNames=[...new Set(rows.map(r=>r.row))],columns=[...new Set(rows.map(r=>r.column))],cw=450/columns.length,rh=36,max=Math.max(1,...rows.map(r=>r.value));height=130+rowNames.length*rh;
+    columns.forEach((c,i)=>{const x=165+i*cw+cw/2;body+=text(x,79,label(c),'text-anchor="start" transform="rotate(-28 '+x+' 79)" style="font-size:10px"')});
+    rowNames.forEach((name,i)=>{body+=text(145,115+i*rh,label(name),'text-anchor="end" style="font-size:11px"');columns.forEach((column,j)=>{const r=rows.find(r=>r.row===name&&r.column===column),x=165+j*cw,y=95+i*rh;body+=`<rect x="${x}" y="${y}" width="${cw-3}" height="${rh-3}" rx="3" fill="${r?'#995043':'#e9e3dd'}" fill-opacity="${r?.value?0.15+0.85*r.value/max:.08}"><title>${escape(name+' · '+column+': '+(r?fmt(r.value)+' '+s.unit+(r.sample?' · '+r.defects+'/'+r.sample:''):'No sample'))}</title></rect>`+text(x+(cw-3)/2,y+22,r?fmt(r.value):'—','text-anchor="middle" style="fill:'+(r&&r.value/max>.55?'#fffdfa':'#2b2d41')+';font-size:11px"')})});
+    body+=text(165,height-8,s.unit+' · blank = no sample','style="font-size:10px"');return {body,height};
+  }
+  if(s.kind==='timeline'||s.kind==='diverging'){
+    const timeline=s.kind==='timeline',lo=timeline?0:Math.min(0,...rows.map(r=>r.value)),hi=Math.max(1,...rows.map(r=>timeline?r.end:r.value)),x=v=>180+(v-lo)/Math.max(1,hi-lo)*410;
+    for(let i=0;i<=4;i++){const value=lo+(hi-lo)*i/4;body+=`<line x1="${x(value)}" y1="25" x2="${x(value)}" y2="${height-45}" stroke="#e6dcd4"/>`+text(x(value),height-22,fmt(value),'text-anchor="middle"')}
+    body+=`<line x1="${x(0)}" y1="25" x2="${x(0)}" y2="${height-45}" stroke="#8f99ad"/>`;
+    rows.forEach((r,i)=>{const start=timeline?r.start:Math.min(0,r.value),end=timeline?r.end:Math.max(0,r.value),y=40+i*37;body+=text(12,y+6,label(r.label),'style="font-size:10px"')+`<rect x="${x(start)}" y="${y-8}" width="${Math.max(1,x(end)-x(start))}" height="20" rx="3" fill="${timeline?colors[i%colors.length]:r.value<0?'#995043':'#8f99ad'}"><title>${escape(r.label+': '+fmt(r.value)+' '+s.unit+(r.resource?' · '+r.resource:''))}</title></rect>`});
+    body+=text(385,height-3,s.unit,'text-anchor="middle"');return {body,height};
+  }
   if(['bar','interval','waterfall','stack','multi'].includes(s.kind)){
     const waterfall=s.kind==='waterfall',parts=s.parts||[],multi=s.kind==='multi';
     const max=waterfall?sum(rows,'value'):Math.max(...rows.map(r=>s.kind==='interval'?r.high??r.value:s.kind==='stack'?parts.reduce((n,p)=>n+(r[p]||0),0):multi?Math.max(...parts.map(p=>r[p]||0)):r.value));
@@ -81,19 +96,20 @@ function marks(s){
     });
     body+=text(390,height-3,s.unit,'text-anchor="middle"');
   }else{
-    const scatter=s.kind==='scatter',dates=rows.map(r=>Date.parse(r.label+'T00:00:00Z'));
-    const minX=scatter?0:Math.min(...dates),maxX=scatter?Math.max(1,...rows.map(r=>r.x)):Math.max(...dates),maxY=Math.max(1,...rows.map(r=>scatter?r.y:r.value))*1.1;
-    const x=v=>70+(v-minX)/Math.max(1,maxX-minX)*490,y=v=>240-v/maxY*188;
-    for(let i=0;i<=4;i++){const v=maxY*i/4;body+=`<line x1="70" y1="${y(v)}" x2="560" y2="${y(v)}" stroke="#eee5df"/>`+text(60,y(v)+4,fmt(v),'text-anchor="end"');}
+    const scatter=s.kind==='scatter',numeric=scatter||s.kind==='curve',dates=rows.map(r=>Date.parse(r.label+'T00:00:00Z'));
+    const minX=numeric?0:Math.min(...dates),maxX=numeric?Math.max(1,...rows.map(r=>r.x)):Math.max(...dates),maxY=Math.max(1,...rows.map(r=>numeric?r.y:r.value))*1.1,minY=Math.min(0,...rows.map(r=>numeric?r.y:r.value))*1.1;
+    const x=v=>70+(v-minX)/Math.max(1,maxX-minX)*490,y=v=>240-(v-minY)/(maxY-minY)*188;
+    for(let i=0;i<=4;i++){const v=minY+(maxY-minY)*i/4;body+=`<line x1="70" y1="${y(v)}" x2="560" y2="${y(v)}" stroke="#eee5df"/>`+text(60,y(v)+4,fmt(v),'text-anchor="end"');}
+    if(minY<0)body+=`<line x1="70" y1="${y(0)}" x2="560" y2="${y(0)}" stroke="#2b2d41" stroke-dasharray="4 4"/>`;
     body+=text(70,23,s.yLabel||s.unit);
-    if(!scatter)body+=`<polyline points="${rows.map((r,i)=>`${x(dates[i])},${y(r.value)}`).join(' ')}" fill="none" stroke="${colors[0]}" stroke-width="2.5"/>`;
-    rows.forEach((r,i)=>{const xx=x(scatter?r.x:dates[i]),yy=y(scatter?r.y:r.value);body+=`<circle cx="${xx}" cy="${yy}" r="${scatter?6:4}" fill="${colors[0]}" stroke="white"><title>${escape(r.label+': '+(scatter?fmt(r.x)+' / '+fmt(r.y):fmt(r.value))+' '+s.unit)}</title></circle>`;if(scatter)body+=text(xx+9,yy-8,i+1);else if(i===0||i===rows.length-1||i%Math.max(1,Math.ceil(rows.length/5))===0)body+=text(xx,263,r.label.slice(5),'text-anchor="middle"');});
-    if(scatter)for(let i=0;i<=4;i++)body+=text(x(maxX*i/4),263,fmt(maxX*i/4),'text-anchor="middle"');
+    if(!scatter)body+=`<polyline points="${rows.map((r,i)=>`${x(numeric?r.x:dates[i])},${y(numeric?r.y:r.value)}`).join(' ')}" fill="none" stroke="${colors[0]}" stroke-width="2.5"/>`;
+    rows.forEach((r,i)=>{const xx=x(numeric?r.x:dates[i]),yy=y(numeric?r.y:r.value);body+=`<circle cx="${xx}" cy="${yy}" r="${scatter?6:4}" fill="${colors[0]}" stroke="white"><title>${escape(r.label+': '+(numeric?fmt(r.x)+' / '+fmt(r.y):fmt(r.value))+' '+s.unit)}</title></circle>`;if(scatter)body+=text(xx+9,yy-8,i+1);else if(!numeric&&(i===0||i===rows.length-1||i%Math.max(1,Math.ceil(rows.length/5))===0))body+=text(xx,263,r.label.slice(5),'text-anchor="middle"');});
+    if(numeric)for(let i=0;i<=4;i++)body+=text(x(maxX*i/4),263,fmt(maxX*i/4),'text-anchor="middle"');
     body+=text(315,296,s.xLabel||'Inspection / complaint date','text-anchor="middle"');
   }
   return {body,height};
 }
-function chart(s){const {body,height}=marks(s);return `<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escape(s.title)}" viewBox="0 0 640 ${height}" class="visual-svg"><title>${escape(s.title)}</title><desc>${escape(s.note)}</desc><style>text{font:12px Arial,sans-serif;fill:#646b80}</style>${body}</svg>`;}
+export function chart(s){const {body,height}=marks(s);return `<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escape(s.title)}" viewBox="0 0 640 ${height}" class="visual-svg"><title>${escape(s.title)}</title><desc>${escape(s.note)}</desc><style>text{font:12px Arial,sans-serif;fill:#646b80}</style>${body}</svg>`;}
 export function standaloneSvg(s){
   const {body,height}=marks(s),note=s.note.match(/.{1,90}(?:\s|$)|.{1,90}/g)||[];
   const key=s.kind==='scatter'?s.rows.flatMap((r,i)=>(String(i+1)+'. '+r.label).match(/.{1,90}(?:\s|$)|.{1,90}/g)||[]):s.parts||[];
@@ -108,5 +124,5 @@ export function visualLibrary(db,a,plans,selectedPlan,category='All',query=''){
   return `<div class="page-head"><div><div class="eyebrow">VISUAL INTELLIGENCE</div><h1>The evidence, in perspective.</h1><p>${all.length} analytical views from ${escape(db.sourceName)}. Inspection comparisons use ${escape(a.focus)}; other chart scopes are stated individually.</p></div><button class="btn primary" data-action="visual-report">Download visual report</button></div><div class="analysis-toolbar"><label>Defect<select id="focus-defect">${a.defects.map(d=>`<option value="${escape(d.type)}" ${d.type===a.focus?'selected':''}>${escape(d.type)}</option>`).join('')}</select></label><label>Reference batch<select id="focus-batch">${db.batches.map(b=>`<option value="${escape(b.id)}" ${b.id===a.reference.id?'selected':''}>${escape(b.id)}</option>`).join('')}</select></label><label>Workspace<select id="visual-category">${['All',...new Set(all.map(s=>s.view))].map(v=>`<option value="${v}" ${v===category?'selected':''}>${v==='All'?'All workspaces':human(v)}</option>`).join('')}</select></label><label>Find a visualization<input id="visual-search" type="search" value="${escape(query)}" placeholder="Search charts, e.g. cost"></label><strong>${rows.length} visualizations</strong></div><p class="chart-note">Charts with missing inputs explain what is unavailable. Hover plotted marks for exact values, expand chart data, or download individual SVG and CSV files. Overview display filters do not change this library; the selected defect and reference batch do.</p><div class="visual-grid">${rows.map(s=>visualCard(s)).join('')||'<div class="chart-empty">No visualizations match your search.</div>'}</div>`;
 }
 export const VISUAL_CSS=`.visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}.visual-card{min-width:0;break-inside:avoid}.visual-svg{width:100%;display:block}.visual-plot{max-height:560px;overflow:auto}.visual-source{font-size:11px;color:#646b80;margin:12px 0}.visual-tools{display:flex;gap:8px;margin-bottom:12px}.visual-evidence summary{cursor:pointer;color:#995043;font-size:12px}.visual-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px}.visual-legend i{display:inline-block;width:10px;height:10px;margin-right:5px}.section-label{display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px}.section-label h2{margin:0;font-size:20px}.section-label span{font-size:12px;color:#646b80}.visual-section{margin-bottom:28px}@media print{.visual-grid{display:block}.visual-card{margin-bottom:25px}.visual-tools{display:none}.visual-plot{max-height:none;overflow:visible}}`;
-export function visualReport(db,a,plans,selectedPlan,fragment=false){const specs=visualSpecs(db,a,plans,selectedPlan);const body=`<style>${VISUAL_CSS}</style><h1>FactorySphere · Visual decision report</h1><p>${escape(db.sourceName)} · ${day()} · ${specs.length} visualizations · selected defect: ${escape(a.focus)}. Individual charts state scope, units and limitations.</p><div class="visual-grid">${specs.map(s=>visualCard(s,false)).join('')}</div>`;return fragment?body:`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>FactorySphere visual report</title><style>body{font:14px Arial,sans-serif;max-width:1400px;margin:32px auto;padding:24px;background:#f0e9e5;color:#2b2d41}.panel{background:white;border:1px solid #e6dcd4;border-radius:12px;padding:22px}.panel h2{font-size:18px}.panel p{font-size:12px;color:#646b80;line-height:1.5}table{border-collapse:collapse;width:100%;font-size:12px}td,th{padding:8px;text-align:left;border-bottom:1px solid #e6dcd4}.table-wrap{overflow:auto}</style></head><body>${body}</body></html>`;}
+export function visualReport(db,a,plans,selectedPlan,fragment=false){const specs=visualSpecs(db,a,plans,selectedPlan);const body=`<style>${VISUAL_CSS}</style><h1>FactorySphere · Visual decision report</h1><p>${escape(db.sourceName)} · ${day()} · ${specs.length} visualizations · selected defect: ${escape(a.focus)}. Individual charts state scope, units and limitations.</p><div class="visual-grid">${specs.map(s=>visualCard(s,false)).join('')}</div>`;return fragment?body:`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>FactorySphere visual report</title><style>body{font:14px Arial,sans-serif;max-width:1400px;margin:32px auto;padding:24px;background:#f0e9e5;color:#2b2d41}.panel{background:white;border:1px solid #e6dcd4;border-radius:12px;padding:22px}.panel h2{font-size:18px}.panel p{font-size:12px;color:#646b80;line-height:1.5}table{border-collapse:collapse;width:100%;font-size:12px}td,th{padding:8px;text-align:left;border-bottom:1px solid #e6dcd4}.table-wrap{overflow:auto}</style></head><body>${body}<style>${REPORT_THEME}</style></body></html>`;}
 export function chartCsv(s){const keys=[...new Set(s.rows.flatMap(Object.keys))];const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';return [[s.title],[s.note],['Source',s.source],['Generated',s.generated],['Unit',s.unit],keys,...s.rows.map(r=>keys.map(k=>r[k]))].map(row=>row.map(cell).join(',')).join('\r\n');}

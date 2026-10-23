@@ -2,10 +2,12 @@
 
 FactorySphere is a local-first browser app for apparel quality traceability, inspection analysis, exposure, recovery planning, Cost of Poor Quality, CAPA, and effectiveness verification. Uploaded data stays in the browser during local use.
 
-Version 2 adds a redesigned desktop workspace, statistical quality monitoring, evidence-linked investigation, seven recovery strategies, cost sensitivity, stronger CAPA gates and a dedicated data workspace. [Implementation, formulas, requirements coverage and boundaries](TRANSFORMATION.md) documents the full transformation.
+Version 3 introduces a complete responsive product redesign, 13 connected workspaces, an interactive Analysis studio, 50 exportable visualizations, record search, evidence-linked investigation, seven recovery strategies, cost sensitivity and evidence-gated CAPA. [Implementation, formulas, requirements coverage and boundaries](TRANSFORMATION.md) and the [design system](DESIGN-SYSTEM.md) document the implementation.
 
 - Repository: https://github.com/mah-era/FactorySphere
 - Live demo: https://mah-era.github.io/FactorySphere/
+
+![FactorySphere operations overview](examples/factorysphere-v3-overview.png)
 
 ## Run locally
 
@@ -53,11 +55,27 @@ dist/test-files/ contains 20 synthetic JSON scenarios and scenarios.zip. Select 
 
 ## Visual outputs
 
-The **Visual library** adds 38 data-driven charts to the existing dashboard visuals. Filter by workspace or search chart titles and explanations. Each chart provides source/date, units, assumptions, exact values on hover, an expandable evidence table, standalone SVG download and chart CSV download. Charts also appear in their relevant operational workspaces.
+The **Analysis studio** links factory, line, style, inspection-stage, machine, material and shift comparisons to their underlying inspections. Filter the quality lens by factory, stage, dates and minimum group sample; select a group to update its metrics, activity heatmap and evidence table. Export the current selection to CSV. Other lenses explicitly retain portfolio-wide or incident-wide scope.
+
+The studio also includes a clickable inventory area map, a defect-signature matrix, interactive recovery cost/time selection, a sequential recovery timeline, signed prevention-benefit sensitivity, action evidence matrices, and deadline-distance charts. The dashboard's inventory tiles link directly to batch genealogy.
+
+Choose **Analysis studio → Critical decision review** to challenge the conclusions. It detects incomplete or screening evidence, competing passing controls, composition-confounded comparisons and ranking reversals. Recovery plans are checked for dominance across cost, time, containment coverage and modeled risk. A 5×5 recurrence/reduction stress matrix shows when prevention creates a net benefit or net cost. Findings include the reason, supporting records and the next verification step. Complete HTML, CSV and analytical JSON exports retain the decision-review outputs.
+
+For a known-answer example, upload [the supplemental synthetic product-mix dataset](dist/test-files/synthetic-product-mix.json). Factory A has a raw 8.2% rate versus B's 2.8%; standardizing the observed style mix reverses that comparison to 5% versus 6%. The app should explicitly flag that reversal. This extra example is separate from the original 20 scenario files.
+
+The **Visual library** contains 50 data-driven charts in addition to the dashboard and studio compositions. Filter by workspace or search chart titles and explanations. Each chart provides source/date, units, assumptions, exact values on hover, an expandable evidence table, standalone SVG download and chart CSV download. Operational pages separate **Workspace** and **Visual analysis** tabs; switching tabs preserves unsubmitted fields.
 
 Coverage includes factory/line/stage/team rates with confidence intervals, inspection volumes, severity burden, stock/shipment exposure, machine/material/shift comparisons, complaints, containment, recovery cost-time trade-offs and cost bridges, inspection risk, release quantities, attributable COPQ, intervention comparisons, CAPA workload/deadlines/evidence, matched effectiveness and data completeness. Missing inputs produce explicit unavailable states.
 
-Use **Download visual report** for a self-contained HTML collection of all 38 charts, suitable for browser printing to PDF. **Export report** also includes the charts alongside the detailed decision report. Gallery scope and source are stated on every output; chart CSV retains full numerical precision.
+Use **Export → Visual report** for a self-contained HTML collection of all 50 charts, suitable for browser printing to PDF. **Export → Decision report** includes the charts alongside the detailed decision report. Chart scope and source are stated on every output; chart CSV retains full numerical precision. Reports use the same ink, ivory, slate, sand and clay design language.
+
+## Navigation and responsive experience
+
+- Press **⌘K / Ctrl+K** or choose the search icon to find a workspace, batch, inspection or action in the active dataset.
+- Open the navigation drawer on tablet and mobile; **Escape** dismisses it. Keyboard focus stays inside the open drawer.
+- Use **Jump to** on operational workspaces to reach a section directly. Long record tables include a local text filter.
+- The interface adapts to desktop, tablet and mobile. Wide analytical charts and tables scroll inside their own panels.
+- Typography is self-hosted: DM Sans and Manrope, with their SIL Open Font Licenses in `dist/fonts/`. No remote font or chart request is required.
 
 ## Validation commands
 
@@ -66,8 +84,9 @@ Use **Download visual report** for a self-contained HTML collection of all 38 ch
     node scripts/validate-local.mjs
     node scripts/validate-intelligence.mjs
     node scripts/validate-visuals.mjs
+    node scripts/validate-experience.mjs
 
-The local validation covers all 20 scenarios plus unseen JSON, flat CSV, and multiple related CSV tables. The browser workflow was also checked with the included independent CSV and XLSX examples.
+Validation covers all 20 scenarios, the extended demonstration, independent calculation oracles, unseen JSON, flat CSV, related CSV tables, explorer filter intersections, signed chart domains, proportional inventory areas and safe rendering. Browser checks cover all 13 workspaces at 1440, 768 and 390 pixels, independent CSV/XLSX/JSON uploads, linked filtering, saved edits, reload, evidence-gated closure and downloaded reports. See [the redesign verification log](DESIGN-SYSTEM.md#verification-record) for the observed results.
 
 ## Operational limits
 

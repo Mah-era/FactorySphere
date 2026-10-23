@@ -1,10 +1,10 @@
-# FactorySphere 2.0 — implementation and assurance record
+# FactorySphere — implementation and assurance record
 
-Date: 16 October 2026. This document supersedes the older project report wherever the implementation described here differs. The original business specification remains the product direction.
+Updated: 23 October 2026. Version 3 introduces 13 responsive workspaces, a complete product design system and 50 exportable analytical views. The [design and analytical experience record](DESIGN-SYSTEM.md) covers the new implementation, formulas, interaction behavior and verification. Dated records below retain the development history. The original business specification remains the product direction.
 
 ## Product and delivery model
 
-FactorySphere connects inspection evidence, customer complaints, production genealogy, containment, recovery, cost and corrective action in an operational browser workspace. The redesign uses navy, slate and teal, with red and amber reserved for exceptions. Desktop is the target surface.
+FactorySphere connects inspection evidence, customer complaints, production genealogy, containment, recovery, cost and corrective action in an operational browser workspace. The current design uses the supplied ink, slate, ivory, sand and clay palette, with self-hosted DM Sans and Manrope typography. Desktop, tablet and mobile are supported.
 
 The application runs entirely on the user's machine, either from a loopback Python static server or as static files delivered by GitHub Pages. Files are parsed in the browser. There is no API that receives production records. Localhost and GitHub Pages are separate browser origins with separate storage. A JSON workspace snapshot transfers the active data, decisions and evidence between them.
 

@@ -1,0 +1,21 @@
+{
+  "scenario": {
+    "title": "Synthetic product-mix ranking reversal",
+    "description": "Factory A looks worse overall (8.2% versus 2.8%), but has the lower defect rate in each style. Standardizing the observed style mix gives A 5% versus B 6%. This is a planted composition effect, not a verified root cause."
+  },
+  "batches": [
+    {"id":"MIX-A-E","factory":"Factory A","sku":"Simple shirt","line":"A-01","inventory":100,"shipped":0,"units":100,"accepted":99},
+    {"id":"MIX-A-H","factory":"Factory A","sku":"Complex jacket","line":"A-02","inventory":900,"shipped":0,"units":900,"accepted":819},
+    {"id":"MIX-B-E","factory":"Factory B","sku":"Simple shirt","line":"B-01","inventory":900,"shipped":0,"units":900,"accepted":882},
+    {"id":"MIX-B-H","factory":"Factory B","sku":"Complex jacket","line":"B-02","inventory":100,"shipped":0,"units":100,"accepted":90}
+  ],
+  "inspections": [
+    {"id":"MIX-I1","batch":"MIX-A-E","type":"Open seam","stage":"Final random","date":"2026-10-20","sample":100,"defects":1,"threshold":2.5,"disposition":"Pass","evidence":"Synthetic simple-style sample A"},
+    {"id":"MIX-I2","batch":"MIX-A-H","type":"Open seam","stage":"Final random","date":"2026-10-20","sample":900,"defects":81,"threshold":2.5,"disposition":"Fail","evidence":"Synthetic complex-style sample A"},
+    {"id":"MIX-I3","batch":"MIX-B-E","type":"Open seam","stage":"Final random","date":"2026-10-20","sample":900,"defects":18,"threshold":2.5,"disposition":"Pass","evidence":"Synthetic simple-style sample B"},
+    {"id":"MIX-I4","batch":"MIX-B-H","type":"Open seam","stage":"Final random","date":"2026-10-20","sample":100,"defects":10,"threshold":2.5,"disposition":"Fail","evidence":"Synthetic complex-style sample B"}
+  ],
+  "costInputs":{"prevention":100,"appraisal":50,"internal":200,"external":300,"recurrence":50,"reduction":50},
+  "incident":{"id":"MIX-REVIEW","leader":"Synthetic quality team","causeConfirmed":false,"hold":true},
+  "groundTruth":{"note":"Factory comparison: raw gap A minus B = +5.4 pp; common-mix gap = -1 pp. This supplemental file is separate from the 20 baseline scenario cases."}
+}
